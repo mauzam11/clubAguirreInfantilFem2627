@@ -168,6 +168,13 @@ let mia = (() => {
 
 const proximo = PARTIDOS.find((p) => p.fecha >= hoyISO()) || null;
 
+const borradores = {};       // jornada -> convocatoria en edición (sin publicar)
+const sinPublicar = (j) => {
+  if (!borradores[j]) return false;
+  const a = borradores[j].join("|"), b = estadoDe(j).conv.join("|");
+  return a !== b;
+};
+
 const estadoDe = (j) => {
   const d = datos[j] || {};
   const noDisp = new Set(d.noDisp || []);
@@ -191,7 +198,13 @@ const ICONO_CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" fill="none" stro
 const ICONO_CAL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`;
 
 function tarjeta(p) {
-  const { noDisp, disponibles, conv } = estadoDe(p.jornada);
+  const estado = estadoDe(p.jornada);
+  const { noDisp, disponibles } = estado;
+  const editando = esEntrenadora && p.fecha >= hoyISO();
+  const conv = editando && borradores[p.jornada]
+    ? JUGADORAS.filter((n) => borradores[p.jornada].includes(n) && !noDisp.has(n))
+    : estado.conv;
+  const dirty = editando && sinPublicar(p.jornada);
   const pasado = p.fecha < hoyISO();
   const esProx = proximo && proximo.jornada === p.jornada;
   const abierto = abiertos.has(p.jornada);
@@ -204,13 +217,13 @@ function tarjeta(p) {
   const equipo = (n) => (n === CLUB ? `<span class="aguirre">${n}</span>` : esc(n));
 
   // Disponibilidad: la familia solo toca a su jugadora (salvo que desbloquee al resto); los partidos jugados no se editan.
-  const bloquearOtras = !esEntrenadora && !pasado && mia && !editarOtras;
+  const bloquearOtras = !esEntrenadora && !pasado && (!mia || !editarOtras);
   const orden = mia ? [mia, ...JUGADORAS.filter((n) => n !== mia)] : JUGADORAS;
   const ayudaDisp = pasado
     ? "Partido jugado: ya no se puede modificar."
     : esEntrenadora ? "Desmarca a la jugadora que no pueda acudir"
     : mia ? (editarOtras ? "Desmarca a la jugadora que no pueda acudir" : "Solo puedes cambiar a tu jugadora")
-    : "Elige «Mi jugadora» arriba para no tocar a otra por error. Desmarca a la que no pueda acudir.";
+    : "Elige «Mi jugadora» arriba para poder indicar la disponibilidad.";
   const btnOtras = !esEntrenadora && !pasado && mia
     ? `<div class="acciones"><button class="btn btn-ghost" data-accion="otras" data-j="${p.jornada}" type="button" aria-pressed="${editarOtras}">${editarOtras ? "Volver a bloquear al resto" : "Editar otras jugadoras"}</button></div>` : "";
   const bloqueDisp = `
@@ -228,10 +241,12 @@ function tarjeta(p) {
       <h3>Convocatoria <small>${conv.length} convocadas</small></h3>
       <ul class="chips">${disponibles.map((n) => chip({ nombre: n, j: p.jornada, tipo: "conv", marcado: conv.includes(n) })).join("")}</ul>
       <div class="acciones">
+        <button class="btn" data-accion="guardar" data-j="${p.jornada}" type="button" ${dirty ? "" : "disabled"}>Guardar convocatoria</button>
         <button class="btn btn-ghost" data-accion="todas" data-j="${p.jornada}" type="button">Convocar a todas</button>
         <button class="btn btn-ghost" data-accion="ninguna" data-j="${p.jornada}" type="button">Quitar todas</button>
         <button class="btn" data-accion="copiar" data-j="${p.jornada}" type="button">Copiar para WhatsApp</button>
-      </div>`;
+      </div>
+      <p class="vacio ayuda" role="status">${dirty ? "Cambios sin publicar: las familias aún no los ven." : "Las familias ven la convocatoria guardada."}</p>`;
   } else {
     bloqueConv = `
       <h3>Convocatoria <small>${conv.length} convocadas</small></h3>
@@ -287,6 +302,27 @@ function tarjeta(p) {
   </details>`;
 }
 
+/* Entrenadora: cuadro jugadoras × jornadas con las convocatorias guardadas */
+function bloqueEstadistica() {
+  const cols = PARTIDOS.map((p) => ({ p, conv: estadoDe(p.jornada).conv }));
+  const publicadas = cols.filter((c) => c.conv.length).length;
+  const cabecera = cols.map((c) => `<th scope="col" title="${esc(fechaLarga(c.p.fecha))}">J${c.p.jornada}</th>`).join("");
+  const filas = JUGADORAS.map((n) => {
+    let veces = 0;
+    const celdas = cols.map((c) => {
+      if (!c.conv.length) return `<td class="sin"><span aria-hidden="true">·</span><span class="sr-only">Sin convocatoria</span></td>`;
+      if (c.conv.includes(n)) { veces++; return `<td class="si"><span aria-hidden="true">✓</span><span class="sr-only">Convocada</span></td>`; }
+      return `<td class="no"><span aria-hidden="true">✗</span><span class="sr-only">No convocada</span></td>`;
+    }).join("");
+    return `<tr><th scope="row">${esc(n)}</th>${celdas}<td class="total">${veces}</td></tr>`;
+  }).join("");
+  return `<h2 class="seccion">Convocatorias por jugadora <small>${publicadas} ${publicadas === 1 ? "jornada" : "jornadas"} con lista</small></h2>
+    <div class="cuadro-scroll" tabindex="0" role="region" aria-label="Cuadro de convocatorias por jugadora y jornada">
+      <table class="cuadro"><thead><tr><th scope="col">Jugadora</th>${cabecera}<th scope="col">Total</th></tr></thead><tbody>${filas}</tbody></table>
+    </div>
+    <p class="vacio ayuda">✓ convocada · ✗ no convocada · · sin lista publicada aún</p>`;
+}
+
 /* Selector de elemento enfocado, para no perder el foco al repintar */
 function selectorFoco(a, cont) {
   if (!a || !cont.contains(a)) return null;
@@ -319,7 +355,11 @@ function render() {
     (futuros.length ? `<h2 class="seccion">Calendario</h2>${futuros.map(tarjeta).join("")}` : "") +
     (jugados.length ? `<details class="jugados" data-grupo="jugados" ${jugadosAbierto ? "open" : ""}>
       <summary>Partidos jugados <small>${jugados.length}</small>${ICONO_CHEVRON}</summary>
-      <div class="jugados-lista">${jugados.map(tarjeta).join("")}</div></details>` : "");
+      <div class="jugados-lista">${jugados.map(tarjeta).join("")}</div></details>` : "") +
+    "";
+  document.getElementById("convocatorias").innerHTML = esEntrenadora ? bloqueEstadistica() : "";
+  document.getElementById("tab-conv").hidden = !esEntrenadora;
+  if (!esEntrenadora && vista === "convocatorias") mostrarVista("partidos");
   window.scrollTo(0, y);
   const b = document.getElementById("btn-entrenadora");
   const etq = esEntrenadora ? "Salir del modo entrenadora" : "Acceso entrenadora";
@@ -364,6 +404,9 @@ lista.addEventListener("change", async (e) => {
   const el = e.target;
   if (el.type !== "checkbox") return;
   const j = Number(el.dataset.j), n = el.dataset.n;
+  if (el.dataset.tipo === "disp" && !esEntrenadora && !mia) {
+    el.checked = !el.checked; toast("Elige «Mi jugadora» primero"); return;
+  }
   try {
     if (el.dataset.tipo === "disp") {
       await store.setDisponible(j, n, el.checked);
@@ -371,10 +414,13 @@ lista.addEventListener("change", async (e) => {
       if (!el.checked && estadoDe(j).conv.includes(n)) {
         await store.setConvocadas(j, estadoDe(j).conv.filter((x) => x !== n));
       }
+      if (!el.checked && borradores[j]) borradores[j] = borradores[j].filter((x) => x !== n);
     } else if (esEntrenadora) {
-      const s = new Set(estadoDe(j).conv);
+      const s = new Set(borradores[j] || estadoDe(j).conv);
       el.checked ? s.add(n) : s.delete(n);
-      await store.setConvocadas(j, JUGADORAS.filter((x) => s.has(x)));
+      borradores[j] = JUGADORAS.filter((x) => s.has(x));
+      render();
+      return;
     }
     guardado();
   } catch (err) {
@@ -393,13 +439,20 @@ lista.addEventListener("click", async (e) => {
   if (acc === "otras") { editarOtras = !editarOtras; render(); return; }
   if (!esEntrenadora) return;
   const { disponibles, conv } = estadoDe(j);
-  try {
-    if (acc === "todas") { await store.setConvocadas(j, disponibles); guardado(); }
-    if (acc === "ninguna") { await store.setConvocadas(j, []); guardado(); }
-  } catch (err) {
-    console.error(err); toast("No se pudo guardar. Revisa la conexión.");
+  if (acc === "todas") { borradores[j] = disponibles; render(); return; }
+  if (acc === "ninguna") { borradores[j] = []; render(); return; }
+  if (acc === "guardar") {
+    try {
+      await store.setConvocadas(j, borradores[j] || conv);
+      delete borradores[j];
+      render(); guardado();
+    } catch (err) {
+      console.error(err); toast("No se pudo guardar. Revisa la conexión.");
+    }
+    return;
   }
   if (acc === "copiar") {
+    if (sinPublicar(j)) { toast("Guarda la convocatoria antes de copiarla"); return; }
     const txt = `⚽ Convocatoria Jornada ${j}\n${p.local} vs ${p.visitante}\n${fechaLarga(p.fecha)}${p.hora ? " · " + p.hora + " h" : ""}\n${p.instalacion || ""}\n\n` +
       (conv.length ? conv.map((n) => "• " + n).join("\n") : "(sin convocar)");
     try { await navigator.clipboard.writeText(txt); toast("Convocatoria copiada"); }
@@ -414,7 +467,7 @@ const pinError = document.getElementById("pin-error");
 
 document.getElementById("btn-entrenadora").addEventListener("click", () => {
   if (esEntrenadora) {
-    esEntrenadora = false; sessionStorage.removeItem("entrenadora"); render(); return;
+    esEntrenadora = false; for (const k in borradores) delete borradores[k]; sessionStorage.removeItem("entrenadora"); render(); return;
   }
   pinInput.value = ""; pinError.hidden = true; dlg.showModal(); pinInput.focus();
 });
@@ -458,9 +511,9 @@ function renderClasificacion() {
 
 function mostrarVista(v, enfocar) {
   vista = v;
-  const clasif = v === "clasificacion";
-  document.getElementById("lista").hidden = clasif;
-  document.getElementById("clasificacion").hidden = !clasif;
+  document.getElementById("lista").hidden = v !== "partidos";
+  document.getElementById("clasificacion").hidden = v !== "clasificacion";
+  document.getElementById("convocatorias").hidden = v !== "convocatorias";
   actualizarCabecera();
   document.querySelectorAll(".tab").forEach((t) => {
     const on = t.dataset.vista === v;
@@ -476,7 +529,7 @@ tabsEl.addEventListener("click", (e) => {
   if (t) mostrarVista(t.dataset.vista);
 });
 tabsEl.addEventListener("keydown", (e) => {
-  const tabs = [...document.querySelectorAll(".tab")];
+  const tabs = [...document.querySelectorAll(".tab")].filter((t) => !t.hidden);
   const i = tabs.findIndex((t) => t.dataset.vista === vista);
   const nuevo = { ArrowRight: (i + 1) % tabs.length, ArrowLeft: (i - 1 + tabs.length) % tabs.length, Home: 0, End: tabs.length - 1 }[e.key];
   if (nuevo === undefined) return;

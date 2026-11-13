@@ -243,7 +243,7 @@ dialog input { background: var(--superficie); color: var(--texto); width: 100%; 
 .footer a { color: #d8c96a; }
 
 /* Pestañas */
-.tabs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; margin: 16px 0 0; padding: 4px; background: var(--tabs-bg); border-radius: 12px; }
+.tabs { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 4px; margin: 16px 0 0; padding: 4px; background: var(--tabs-bg); border-radius: 12px; }
 .tab { font: inherit; font-weight: 500; font-size: 15px; background: transparent; border: 0; border-radius: 9px; min-height: 44px; color: var(--gris); cursor: pointer; }
 .tab.activa { background: var(--superficie); color: var(--acento); font-weight: 600; }
 .tab:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }
@@ -337,3 +337,17 @@ dialog input { background: var(--superficie); color: var(--texto); width: 100%; 
   :root:not([data-theme="light"]) #btn-tema .ic-sol { display: block; }
   :root:not([data-theme="light"]) #btn-tema .ic-luna { display: none; }
 }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.cuadro-scroll { margin-top: 12px; overflow-x: auto; background: var(--superficie); border: 1px solid var(--borde); border-radius: 14px; }
+.cuadro { border-collapse: collapse; width: 100%; font-size: 14px; }
+.cuadro th, .cuadro td { padding: 8px 10px; text-align: center; border-bottom: 1px solid var(--borde); white-space: nowrap; }
+.cuadro thead th { font-size: 12px; color: var(--gris); font-weight: 600; }
+.cuadro tbody tr:last-child > * { border-bottom: 0; }
+.cuadro th[scope="row"], .cuadro thead th:first-child { text-align: left; position: sticky; left: 0; background: var(--superficie); font-weight: 500; }
+.cuadro td.si { color: var(--verde-tinta); font-weight: 700; }
+.cuadro td.no { color: var(--rojo); font-weight: 700; }
+.cuadro td.sin { color: var(--gris); }
+.cuadro td.total { font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .cuadro td.si { color: #5fd3a8; } }
+:root[data-theme="dark"] .cuadro td.si { color: #5fd3a8; }
+.seccion small { font-weight: 400; color: var(--gris); font-size: 13px; margin-left: 6px; }
