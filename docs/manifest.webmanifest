@@ -1,0 +1,16 @@
+{
+  "name": "Club Aguirre · Infantil Femenino 26/27",
+  "short_name": "Aguirre Inf. Fem.",
+  "description": "Partidos, disponibilidad, convocatoria y clasificación del Infantil Femenino del Club Aguirre.",
+  "lang": "es",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#066e50",
+  "theme_color": "#089369",
+  "icons": [
+    { "src": "assets/icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "assets/icono-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "assets/icono-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
