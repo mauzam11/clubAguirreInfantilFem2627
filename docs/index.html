@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#089369">
+  <meta name="theme-color" content="#066e50">
   <title>Club Aguirre · Infantil Femenino 26/27</title>
   <meta name="description" content="Partidos, disponibilidad, convocatoria y clasificación del Infantil Femenino del Club Aguirre (fútbol sala, 2026-27).">
-  <meta name="color-scheme" content="light dark">
+  <meta name="color-scheme" content="dark light">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="es_ES">
   <meta property="og:title" content="Club Aguirre · Infantil Femenino 26/27">
@@ -18,7 +18,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script>try{var t=localStorage.getItem("aguirre-tema");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -38,14 +38,14 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
       </button>
     </div>
-  </header>
-
-  <main class="wrap">
-    <nav class="tabs" role="tablist" aria-label="Secciones">
+    <nav class="wrap tabs" role="tablist" aria-label="Secciones">
       <button class="tab activa" role="tab" id="tab-partidos" aria-selected="true" aria-controls="lista" type="button" data-vista="partidos">Partidos</button>
       <button class="tab" role="tab" id="tab-clasif" aria-selected="false" tabindex="-1" aria-controls="clasificacion" type="button" data-vista="clasificacion">Clasificación</button>
       <button class="tab" role="tab" id="tab-conv" aria-selected="false" tabindex="-1" aria-controls="convocatorias" type="button" data-vista="convocatorias" hidden>Convocatorias</button>
     </nav>
+  </header>
+
+  <main class="wrap">
     <div class="mi-fila" id="mi-fila">
       <label for="mi-jugadora">Mi jugadora</label>
       <select id="mi-jugadora"></select>

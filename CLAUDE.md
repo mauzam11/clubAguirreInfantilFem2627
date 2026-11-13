@@ -18,7 +18,7 @@ Se publica con GitHub Pages desde la rama `main`, carpeta `/docs`. No hay build,
 docs/                       Sitio publicado (GitHub Pages)
   index.html                Marcado: cabecera, pestañas Partidos/Clasificación, diálogo de PIN, toast
   app.js                    Toda la lógica de UI y almacenamiento (JS vanilla, sin módulos propios)
-  styles.css                Estilos (fuente Poppins, color de marca #089369)
+  styles.css                Estilos (fuentes Anton y Archivo; verde del club #066e50/#089369 y blanco, sin dorado; tema oscuro por defecto y claro con [data-theme="light"])
   data.js                   MANUAL: window.JUGADORAS (plantilla) y window.PIN_ENTRENADORA
   datos-liga.js             GENERADO: window.LIGA, window.PARTIDOS, window.CLASIFICACION
   firebase-config.js        window.FIREBASE_CONFIG (la apiKey web no es secreta)

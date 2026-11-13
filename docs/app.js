@@ -261,16 +261,17 @@ function tarjeta(p) {
   let resumen;
   if (esProx) {
     const f = fechaCorta(p.fecha);
-    const pct = JUGADORAS.length ? Math.round((disponibles.length / JUGADORAS.length) * 100) : 0;
+    const miCamiseta = p.local === CLUB ? p.camisetaLocal : p.camisetaVisitante;
     resumen = `
       <div class="meta"><span class="etiqueta">Próximo partido</span><span>Jornada ${p.jornada}</span>${resHtml}</div>
       ${ICONO_CHEVRON}
-      <div class="destacado-fecha">${esc(f.dia)} ${f.num} ${esc(f.mes)}</div>
-      <div class="destacado-hora">${hora}</div>
-      <div class="cruce">${equipo(p.local)} <span class="vs">${marcador}</span> ${equipo(p.visitante)}</div>
-      <div class="destacado-lugar">${esc(p.instalacion || "Instalación por confirmar")} · ${sede}</div>
+      <div class="destacado-fecha"><span class="sr-only">${esc(fechaLarga(p.fecha))}, ${hora}</span>
+        <b aria-hidden="true">${f.num}</b>
+        <span class="destacado-dm" aria-hidden="true"><span>${esc(f.dia)}<br>${esc(f.mes)}</span><span class="destacado-hora">${hora}</span></span></div>
+      <div class="cruce">${equipo(p.local)} <span class="vs">${p.finalizado ? marcador : "— vs —"}</span> ${equipo(p.visitante)}</div>
+      <div class="destacado-lugar">${ICONO_PIN}<span>${p.instalacion ? "Campo: " + esc(p.instalacion) : "Instalación por confirmar"} · ${sede}${miCamiseta ? ` · camiseta ${esc(miCamiseta.toLowerCase())}` : ""}</span></div>
       <div class="disp-barra"><div class="disp-texto"><span>${pocas ? '<span class="aviso">Pocas jugadoras</span>' : "Disponibles"}</span><b>${disponibles.length} de ${JUGADORAS.length}</b></div>
-        <div class="barra" aria-hidden="true"><div class="barra-relleno${pocas ? " baja" : ""}" style="width:${pct}%"></div></div></div>
+        <div class="segmentos${pocas ? " baja" : ""}" style="--n:${JUGADORAS.length}" aria-hidden="true">${JUGADORAS.map((_, i) => `<span${i < disponibles.length ? ' class="on"' : ""}></span>`).join("")}</div></div>
       <span class="ver-conv">Ver convocatoria</span>`;
   } else {
     const f = fechaCorta(p.fecha);
@@ -287,8 +288,8 @@ function tarjeta(p) {
   <details class="partido${pasado ? " pasado" : ""}${esProx ? " proximo" : ""}" data-j="${p.jornada}" ${abierto ? "open" : ""}>
     <summary>${resumen}</summary>
     <div class="cuerpo">
-      <p class="lugar">${ICONO_PIN}<span>${p.instalacion
-        ? `${esc(p.instalacion)} · <a href="${mapa}" target="_blank" rel="noopener">Ver mapa</a>`
+      <p class="lugar">${ICONO_PIN}<span class="lugar-txt">${p.instalacion
+        ? `Campo: ${esc(p.instalacion)}<a href="${mapa}" target="_blank" rel="noopener">Ver mapa</a>`
         : "Instalación por confirmar"}</span></p>
       ${pasado ? "" : `<div class="acciones-partido"><button class="btn btn-ghost btn-ics" data-accion="ics" data-j="${p.jornada}" type="button">${ICONO_CAL}Añadir al calendario</button></div>`}
       <div class="camisetas">
@@ -352,7 +353,7 @@ function render() {
   const jugados = PARTIDOS.filter((p) => p.fecha < hoy).reverse();
   cont.innerHTML =
     (proximo ? `<h2 class="sr-only">Próximo partido</h2>${tarjeta(proximo)}` : "") +
-    (futuros.length ? `<h2 class="seccion">Calendario</h2>${futuros.map(tarjeta).join("")}` : "") +
+    (futuros.length ? `<h2 class="seccion">Calendario<span class="cinta-rep" aria-hidden="true">${"✦ Calendario ".repeat(6)}</span></h2>${futuros.map(tarjeta).join("")}` : "") +
     (jugados.length ? `<details class="jugados" data-grupo="jugados" ${jugadosAbierto ? "open" : ""}>
       <summary>Partidos jugados <small>${jugados.length}</small>${ICONO_CHEVRON}</summary>
       <div class="jugados-lista">${jugados.map(tarjeta).join("")}</div></details>` : "") +
@@ -495,8 +496,8 @@ function renderClasificacion() {
     </tr>`).join("");
   const mio = CLASIFICACION.find((e) => e.equipo.startsWith(CLUB));
   const resumenClub = mio ? `
-    <div class="club-resumen"><b>${mio.pos}º</b>
-      <span>${esc(mio.equipo)}<br>${mio.pts} puntos · ${mio.pj} partidos jugados</span></div>` : "";
+    <div class="club-resumen"><b>${mio.pos}<sup>º</sup></b>
+      <span class="club-datos"><strong>${esc(mio.equipo)}</strong><span class="club-chip">${mio.pts} puntos · ${mio.pj} jugados</span></span></div>` : "";
   cont.innerHTML = `<h2 class="sr-only">Clasificación</h2>` + resumenClub + `
     <div class="tabla-wrap"><table class="tabla">
       <caption class="sr-only">Clasificación del grupo</caption>
@@ -555,8 +556,7 @@ renderClasificacion();
 /* ---------- Tema claro/oscuro ---------- */
 
 const btnTema = document.getElementById("btn-tema");
-const mqOscuro = window.matchMedia("(prefers-color-scheme: dark)");
-const temaActual = () => document.documentElement.dataset.theme || (mqOscuro.matches ? "dark" : "light");
+const temaActual = () => document.documentElement.dataset.theme || "dark"; // el diseño por defecto es el oscuro
 function etiquetaTema() {
   const q = temaActual() === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro";
   btnTema.setAttribute("aria-label", q); btnTema.title = q;
