@@ -36,6 +36,8 @@ Orden de carga de scripts en `index.html`: `data.js` → `datos-liga.js` → `fi
 1. **Datos de la liga** (partidos del Aguirre, resultados, camisetas, clasificación): viven **solo** en `docs/datos-liga.js`, generado por `scripts/generar_datos.py`. **No se edita a mano** ni se escribe nunca en Firestore.
 2. **Datos de los usuarios** (disponibilidad y convocatoria): Firestore, colección `partidos`, un documento por jornada `j{N}` con los campos `noDisp` (array de nombres no disponibles) y `conv` (array de convocadas). Se sincroniza en tiempo real con `onSnapshot`.
 
+3. **Asistencia a entrenamientos** (pestaña «Asistencia», solo modo entrenadora): Firestore, colección `entrenamientos`, un documento por fecha ISO con `asisten` (array) y `cancelado` (bool, «sin entrenamiento») y `notas` (texto, máx. 1000). Las sesiones (lunes y miércoles) se generan en el cliente desde `window.INICIO_ENTRENAMIENTOS` (en `data.js`, ahora 2026-11-01) hasta hoy. Una sesión solo cuenta en el porcentaje si tiene `asisten` y no está cancelada. Requiere la regla `entrenamientos/{fecha}` del README.
+
 Consecuencia importante: las marcas en Firestore están ligadas al **número de jornada**; por eso el script no renumera jornadas y respeta las del CSV.
 
 ### Actualizar datos de la liga

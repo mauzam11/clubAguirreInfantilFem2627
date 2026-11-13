@@ -31,6 +31,14 @@ service cloud.firestore {
                    && request.resource.data.get('noDisp', []).size() <= 30
                    && request.resource.data.get('conv', []).size() <= 30;
     }
+    // Asistencia a entrenamientos: un documento por fecha (p. ej. 2026-11-16)
+    match /entrenamientos/{fecha} {
+      allow read: if true;
+      allow write: if request.resource.data.keys().hasOnly(['asisten', 'cancelado', 'notas'])
+                   && request.resource.data.get('asisten', []).size() <= 30
+                   && request.resource.data.get('notas', '').size() <= 1000
+                   && request.resource.data.get('cancelado', false) is bool;
+    }
   }
 }
 ```

@@ -41,7 +41,9 @@
     <nav class="wrap tabs" role="tablist" aria-label="Secciones">
       <button class="tab activa" role="tab" id="tab-partidos" aria-selected="true" aria-controls="lista" type="button" data-vista="partidos">Partidos</button>
       <button class="tab" role="tab" id="tab-clasif" aria-selected="false" tabindex="-1" aria-controls="clasificacion" type="button" data-vista="clasificacion">Clasificación</button>
+      <button class="tab" role="tab" id="tab-normas" aria-selected="false" tabindex="-1" aria-controls="normas" type="button" data-vista="normas">NORMAS</button>
       <button class="tab" role="tab" id="tab-conv" aria-selected="false" tabindex="-1" aria-controls="convocatorias" type="button" data-vista="convocatorias" hidden>Convocatorias</button>
+      <button class="tab" role="tab" id="tab-asist" aria-selected="false" tabindex="-1" aria-controls="asistencia" type="button" data-vista="asistencia" hidden>Asistencia</button>
     </nav>
   </header>
 
@@ -56,7 +58,27 @@
     </div>
     <section id="lista" class="lista" aria-live="polite" role="tabpanel" aria-labelledby="tab-partidos"></section>
     <section id="clasificacion" class="clasif" role="tabpanel" aria-labelledby="tab-clasif" hidden></section>
+    <section id="normas" class="clasif normas" role="tabpanel" aria-labelledby="tab-normas" hidden>
+      <h2 class="sr-only">Normas</h2>
+      <p>Nosotras contamos con todas las niñas para cada fin de semana, por lo que, si alguna no va a poder asistir, es importante que nos lo comuniquéis con antelación.</p>
+      <p>En caso de que no recibamos ningún aviso, entenderemos que está disponible y la tendremos en cuenta para la convocatoria.</p>
+      <p class="norma-aviso">❗Si una niña es convocada y después no puede asistir porque no se nos había avisado previamente, la siguiente semana no irá convocada</p>
+      <h3>Para elegir a las 10 jugadoras tendremos en cuenta los siguientes aspectos:</h3>
+      <ul>
+        <li><strong>Asistencia a los entrenamientos:</strong> es importante mantener una continuidad y un compromiso con el equipo.</li>
+        <li><strong>Actitud y comportamiento:</strong> valoraremos las ganas, la implicación, el respeto y el trabajo durante los entrenamientos. (Asistir los dos días no garantiza automáticamente estar convocada)</li>
+        <li><strong>Uso del móvil durante los entrenamientos:</strong> si una jugadora utiliza el móvil durante el entrenamiento, no irá convocada esa semana.</li>
+        <li><strong>Uso del móvil durante los partidos:</strong> si una jugadora utiliza el móvil durante el partido, no irá convocada para el siguiente encuentro.</li>
+      </ul>
+      <p class="norma-aviso">👕Además, os recordamos que todas deben llevar la equipacion del club: Camiseta, pantalón y medias. Si no lo llevan, no podrán jugar el partido</p>
+      <p>Con todo esto también buscamos que exista un compromiso por parte de todos.</p>
+      <p>Las niñas todavía no tienen la responsabilidad de avisarnos cuando no pueden asistir, por lo que necesitamos que seáis vosotros quienes nos lo comuniquéis.</p>
+      <p>Apuntar a las niñas al equipo también implica una implicación por vuestra parte: formamos parte de un mismo equipo y necesitamos que todos rememos en la misma dirección💪🏻</p>
+      <p>Nuestro objetivo es que todas sigan creciendo, aprendiendo y disfrutando del fútbol sala, pero también que entiendan la importancia del compromiso, el respeto y la responsabilidad con sus compañeras y con el equipo.</p>
+      <p><strong>¡Gracias por vuestra colaboración!</strong></p>
+    </section>
     <section id="convocatorias" class="clasif" role="tabpanel" aria-labelledby="tab-conv" hidden></section>
+    <section id="asistencia" class="clasif" role="tabpanel" aria-labelledby="tab-asist" hidden></section>
   </main>
 
   <footer class="footer">

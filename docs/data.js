@@ -4,3 +4,7 @@ window.JUGADORAS = ["Vega", "María", "Cris", "Inés", "Amaia", "Lara", "Rebeca"
 window.PIN_ENTRENADORA = "28007";
 
 window.MIN_JUGADORAS = 7;  // por debajo de este número de disponibles se avisa de "pocas jugadoras"
+
+// Entrenamientos: se registran los lunes y miércoles (getDay: 1 = lunes, 3 = miércoles) desde esta fecha
+window.INICIO_ENTRENAMIENTOS = "2026-11-01";
+window.DIAS_ENTRENAMIENTO = [1, 3];

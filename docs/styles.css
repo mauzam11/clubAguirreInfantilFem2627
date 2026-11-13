@@ -116,8 +116,8 @@ h1 { margin: 0; font-family: var(--display); font-size: 22px; font-weight: 400; 
 .tab:hover { color: #fff; }
 .tab.activa { color: #fff; border-bottom-color: #fff; }
 .tab:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
-.tabs:has(#tab-conv:not([hidden])) { gap: 16px; }
-.tabs:has(#tab-conv:not([hidden])) .tab { font-size: clamp(16px, 5.2vw, 30px); }
+.tabs:has(#tab-conv:not([hidden])) { gap: 14px; }
+.tabs:has(#tab-conv:not([hidden])) .tab { font-size: clamp(14px, 4.4vw, 28px); }
 
 .estado-fila { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 8px 0 0; min-height: 24px; }
 .estado { font-size: 13px; color: var(--gris); }
@@ -369,3 +369,19 @@ dialog input { background: var(--fondo); color: var(--texto); width: 100%; font:
 /* Los números gigantes llevan un interlineado muy apretado y su caja de texto
    sobresale por arriba: no deben capturar clics de lo que tienen encima. */
 .club-resumen > b, .destacado-fecha > b, .fecha-bloque b { pointer-events: none; }
+
+/* Asistencia a entrenamientos (entrenadora) */
+.sesion .fecha-bloque { color: var(--texto); }
+.cuadro td.total { text-align: center; }
+
+/* Normas */
+.normas { line-height: 1.55; }
+.normas p, .normas li { margin: 0 0 12px; }
+.normas h3 { font-size: 1rem; margin: 20px 0 10px; }
+.normas ul { padding-left: 20px; margin: 0 0 12px; }
+.normas .norma-aviso { padding: 10px 12px; border-left: 3px solid var(--verde, #089369); background: rgba(8,147,105,.12); border-radius: 6px; }
+.filtro { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.filtro .btn[aria-pressed="true"] { background: var(--btn-bg); color: var(--btn-fg); border-color: var(--btn-bg); }
+.nota { display: block; width: 100%; box-sizing: border-box; min-height: 88px; padding: 10px 12px; font: inherit; font-size: 15px; line-height: 1.4; resize: vertical;
+  border: 2px solid var(--borde); border-radius: 0; background: var(--superficie); color: var(--texto); }
+.nota:focus-visible { outline: 3px solid var(--foco); outline-offset: 2px; }

@@ -50,6 +50,19 @@ async function crearStore() {
         setDisponible: (j, nombre, si) =>
           fs.setDoc(ref(j), { noDisp: si ? fs.arrayRemove(nombre) : fs.arrayUnion(nombre) }, { merge: true }),
         setConvocadas: (j, lista) => fs.setDoc(ref(j), { conv: lista }, { merge: true }),
+        // Entrenamientos: un documento por fecha ISO (entrenamientos/2026-11-16)
+        suscribirEntrenos(cb) {
+          return fs.onSnapshot(fs.collection(db, "entrenamientos"), (snap) => {
+            const out = {};
+            snap.forEach((d) => (out[d.id] = d.data()));
+            cb(out);
+          }, (e) => { console.error(e); cb(null, e); });
+        },
+        setAsistencia: (f, nombre, si) =>
+          fs.setDoc(fs.doc(db, "entrenamientos", f), { asisten: si ? fs.arrayUnion(nombre) : fs.arrayRemove(nombre) }, { merge: true }),
+        setAsistentes: (f, lista) => fs.setDoc(fs.doc(db, "entrenamientos", f), { asisten: lista }, { merge: true }),
+        setSinEntreno: (f, si) => fs.setDoc(fs.doc(db, "entrenamientos", f), { cancelado: si }, { merge: true }),
+        setNotas: (f, txt) => fs.setDoc(fs.doc(db, "entrenamientos", f), { notas: txt }, { merge: true }),
       };
     } catch (e) {
       console.error("No se pudo iniciar Firebase, uso modo local", e);
@@ -65,6 +78,15 @@ function storeLocal() {
   let cb = () => {};
   window.addEventListener("storage", (e) => { if (e.key === K) cb(leer()); });
   const mod = (j, fn) => { const o = leer(); o[j] = o[j] || {}; fn(o[j]); guardar(o); cb(o); };
+  const KE = K + "-entrenos";
+  const leerE = () => { try { return JSON.parse(localStorage.getItem(KE)) || {}; } catch { return {}; } };
+  let cbE = () => {};
+  window.addEventListener("storage", (e) => { if (e.key === KE) cbE(leerE()); });
+  const modE = (f, fn) => {
+    const o = leerE(); o[f] = o[f] || {}; fn(o[f]);
+    try { localStorage.setItem(KE, JSON.stringify(o)); } catch {}
+    cbE(o);
+  };
   return {
     modo: "local",
     suscribir(f) { cb = f; f(leer()); return () => {}; },
@@ -76,6 +98,14 @@ function storeLocal() {
       });
     },
     async setConvocadas(j, lista) { mod(j, (p) => { p.conv = lista; }); },
+    // Entrenamientos (misma estructura que en Firestore, clave aparte)
+    suscribirEntrenos(f) { cbE = f; f(leerE()); return () => {}; },
+    async setAsistencia(f, nombre, si) {
+      modE(f, (d) => { const s = new Set(d.asisten || []); si ? s.add(nombre) : s.delete(nombre); d.asisten = [...s]; });
+    },
+    async setAsistentes(f, lista) { modE(f, (d) => { d.asisten = lista; }); },
+    async setSinEntreno(f, si) { modE(f, (d) => { d.cancelado = si; }); },
+    async setNotas(f, txt) { modE(f, (d) => { d.notas = txt; }); },
   };
 }
 
@@ -165,6 +195,14 @@ const CLAVE_MIA = "aguirre-mi-jugadora-2627";
 let mia = (() => {
   try { const v = localStorage.getItem(CLAVE_MIA); return JUGADORAS.includes(v) ? v : ""; } catch { return ""; }
 })();
+
+let entrenos = {};           // fecha ISO -> { asisten: [], cancelado: bool }
+const entrAbiertos = new Set();
+let entrInicial = true;
+const notasBorrador = {};    // fecha -> nota en edición aún sin guardar
+const NOTAS_MAX = 1000;
+let entrVisibles = 4;        // sesiones mostradas en la lista (se amplía de 4 en 4)
+let asistRango = "todo";     // resumen de asistencia: "todo" | "semana" (últimos 7 días)
 
 const proximo = PARTIDOS.find((p) => p.fecha >= hoyISO()) || null;
 
@@ -324,6 +362,106 @@ function bloqueEstadistica() {
     <p class="vacio ayuda">✓ convocada · ✗ no convocada · · sin lista publicada aún</p>`;
 }
 
+/* Entrenadora: registro de asistencia a los entrenamientos (lunes y miércoles desde INICIO_ENTRENAMIENTOS) */
+const DIAS_ENTRENO = window.DIAS_ENTRENAMIENTO || [1, 3];
+function sesionesEntreno() {
+  const ini = window.INICIO_ENTRENAMIENTOS, hoy = hoyISO(), out = [];
+  if (!ini) return out;
+  for (const d = new Date(ini + "T12:00:00"); ; d.setDate(d.getDate() + 1)) {
+    const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    if (iso > hoy) break;
+    if (DIAS_ENTRENO.includes(d.getDay())) out.push(iso);
+  }
+  return out.reverse();   // la más reciente primero
+}
+// Una sesión cuenta cuando se ha pasado lista (existe el campo asisten) y no está marcada «sin entrenamiento»
+const entrenoContado = (f) => { const d = entrenos[f]; return !!d && Array.isArray(d.asisten) && !d.cancelado; };
+
+function bloqueAsistencia() {
+  const sesiones = sesionesEntreno();
+  if (!sesiones.length) {
+    const ini = window.INICIO_ENTRENAMIENTOS;
+    return `<h2 class="seccion">Asistencia a entrenamientos</h2>
+      <p class="vacio">${ini ? `El registro empieza el ${esc(fechaLarga(ini))}.` : "Aún no hay entrenamientos configurados."}</p>`;
+  }
+  if (entrInicial) { entrInicial = false; entrAbiertos.add(sesiones[0]); }
+  const desde = new Date(hoyISO() + "T12:00:00"); desde.setDate(desde.getDate() - 6);
+  const desdeISO = `${desde.getFullYear()}-${String(desde.getMonth() + 1).padStart(2, "0")}-${String(desde.getDate()).padStart(2, "0")}`;
+  const contadas = sesiones.filter((f) => entrenoContado(f) && (asistRango === "todo" || f >= desdeISO));
+  const resumen = JUGADORAS.map((n) => {
+    const veces = contadas.filter((f) => entrenos[f].asisten.includes(n)).length;
+    return { n, veces, pct: contadas.length ? Math.round((veces / contadas.length) * 100) : null };
+  });
+  const filas = resumen.map((r) => `<tr><th scope="row">${esc(r.n)}</th>
+      <td class="total">${r.veces}/${contadas.length}</td>
+      <td class="${r.pct === null ? "sin" : r.pct >= 75 ? "si" : r.pct < 50 ? "no" : ""}">${r.pct === null ? "·" : r.pct + " %"}</td></tr>`).join("");
+  const tarjetaSesion = (f) => {
+    const d = entrenos[f] || {};
+    const cancelado = !!d.cancelado, lista = Array.isArray(d.asisten);
+    const asisten = new Set(d.asisten || []);
+    const fc = fechaCorta(f);
+    const nota = f in notasBorrador ? notasBorrador[f] : (d.notas || "");
+    const notaSucia = nota.trim() !== (d.notas || "");
+    const estado = cancelado ? "Sin entrenamiento" : lista ? `${asisten.size}/${JUGADORAS.length} asistentes` : "Pendiente de pasar lista";
+    return `<details class="partido pasado sesion" data-f="${f}" ${entrAbiertos.has(f) ? "open" : ""}>
+      <summary>
+        <div class="fecha-bloque" aria-hidden="true"><span>${esc(fc.dia)}</span><b>${fc.num}</b><span>${esc(fc.mes)}</span></div>
+        <div class="partido-info"><div class="cruce">Entrenamiento</div>
+          <div class="meta"><span>${esc(fechaLarga(f))}</span><span class="${cancelado ? "" : lista ? "res v" : "aviso"}">${estado}</span>${d.notas ? '<span class="res">Con nota</span>' : ""}</div></div>
+        ${ICONO_CHEVRON}
+      </summary>
+      <div class="cuerpo">
+        <h3>Asistencia <small>${cancelado ? "no cuenta en el porcentaje" : `${asisten.size} de ${JUGADORAS.length}`}</small></h3>
+        <ul class="chips">${JUGADORAS.map((n) => `<li class="chip ${asisten.has(n) ? "conv" : ""}${cancelado ? " solo bloqueada" : ""}"><label>
+          <input type="checkbox" data-f="${f}" data-n="${esc(n)}" ${asisten.has(n) ? "checked" : ""} ${cancelado ? "disabled" : ""}>
+          <span class="ini" aria-hidden="true">${esc(n.charAt(0).toUpperCase())}</span><span class="nombre">${esc(n)}</span></label></li>`).join("")}</ul>
+        <div class="acciones">
+          ${cancelado ? "" : `<button class="btn" data-accion="todas" data-f="${f}" type="button">Marcar todas</button>
+          <button class="btn btn-ghost" data-accion="ninguna" data-f="${f}" type="button">Quitar todas</button>`}
+          <button class="btn btn-ghost" data-accion="sin-entreno" data-f="${f}" type="button" aria-pressed="${cancelado}">${cancelado ? "Hubo entrenamiento" : "Sin entrenamiento"}</button>
+        </div>
+        <p class="vacio ayuda">${cancelado ? "Esta sesión no cuenta (festivo, partido, pabellón cerrado…)." : "Cada cambio se guarda al momento."}</p>
+        <h3><label for="nota-${f}">Notas del entrenamiento</label></h3>
+        <textarea id="nota-${f}" class="nota" data-f="${f}" rows="3" maxlength="${NOTAS_MAX}" placeholder="Ejercicios, lesiones, avisos, quién llegó tarde…">${esc(nota)}</textarea>
+        <div class="acciones">
+          <button class="btn" data-accion="guardar-nota" data-f="${f}" type="button" ${notaSucia ? "" : "disabled"}>Guardar nota</button>
+          <span class="nota-estado vacio" role="status">${notaSucia ? "Nota sin guardar" : d.notas ? "Nota guardada" : ""}</span>
+        </div>
+      </div>
+    </details>`;
+  };
+  const filtro = `<div class="filtro" role="group" aria-label="Periodo del resumen">
+      <button type="button" class="btn btn-ghost" data-rango="todo" aria-pressed="${asistRango === "todo"}">Toda la temporada</button>
+      <button type="button" class="btn btn-ghost" data-rango="semana" aria-pressed="${asistRango === "semana"}">Última semana</button></div>`;
+  return `<h2 class="seccion">Asistencia por jugadora <small>${contadas.length} ${contadas.length === 1 ? "sesión" : "sesiones"} con lista</small></h2>
+    ${filtro}
+    <div class="cuadro-scroll" tabindex="0" role="region" aria-label="Asistencia acumulada por jugadora">
+      <table class="cuadro"><thead><tr><th scope="col">Jugadora</th><th scope="col">Asistió</th><th scope="col">%</th></tr></thead><tbody>${filas}</tbody></table>
+    </div>
+    <p class="vacio ayuda">${asistRango === "semana" ? "Últimos 7 días. " : ""}Solo cuentan las sesiones con lista guardada y no marcadas como «sin entrenamiento».</p>
+    <h2 class="seccion">Entrenamientos <small>lunes y miércoles</small></h2>
+    ${sesiones.slice(0, entrVisibles).map(tarjetaSesion).join("")}
+    ${sesiones.length > entrVisibles
+      ? `<div class="acciones"><button class="btn btn-ghost" type="button" data-mas="1">Cargar las 4 siguientes <small>(${sesiones.length - entrVisibles} más)</small></button></div>` : ""}`;
+}
+
+function renderAsistencia() {
+  const cont = document.getElementById("asistencia");
+  const a = document.activeElement;
+  if (a && a.tagName === "TEXTAREA" && cont.contains(a)) return;   // no pisar lo que se está escribiendo
+  const foco = a && cont.contains(a)
+    ? (a.dataset.n ? `input[data-f="${a.dataset.f}"][data-n="${CSS.escape(a.dataset.n)}"]`
+      : a.dataset.mas ? "[data-mas]"
+      : a.dataset.rango ? `[data-rango="${a.dataset.rango}"]`
+      : a.dataset.accion ? `[data-accion="${a.dataset.accion}"][data-f="${a.dataset.f}"]`
+      : a.tagName === "SUMMARY" ? `details[data-f="${a.parentElement.dataset.f}"] > summary` : null)
+    : null;
+  const y = window.scrollY;
+  cont.innerHTML = esEntrenadora ? bloqueAsistencia() : "";
+  window.scrollTo(0, y);
+  if (foco) cont.querySelector(foco)?.focus({ preventScroll: true });
+}
+
 /* Selector de elemento enfocado, para no perder el foco al repintar */
 function selectorFoco(a, cont) {
   if (!a || !cont.contains(a)) return null;
@@ -359,8 +497,10 @@ function render() {
       <div class="jugados-lista">${jugados.map(tarjeta).join("")}</div></details>` : "") +
     "";
   document.getElementById("convocatorias").innerHTML = esEntrenadora ? bloqueEstadistica() : "";
+  renderAsistencia();
   document.getElementById("tab-conv").hidden = !esEntrenadora;
-  if (!esEntrenadora && vista === "convocatorias") mostrarVista("partidos");
+  document.getElementById("tab-asist").hidden = !esEntrenadora;
+  if (!esEntrenadora && (vista === "convocatorias" || vista === "asistencia")) mostrarVista("partidos");
   window.scrollTo(0, y);
   const b = document.getElementById("btn-entrenadora");
   const etq = esEntrenadora ? "Salir del modo entrenadora" : "Acceso entrenadora";
@@ -461,6 +601,48 @@ lista.addEventListener("click", async (e) => {
   }
 });
 
+const asistenciaEl = document.getElementById("asistencia");
+asistenciaEl.addEventListener("toggle", (e) => {
+  const f = e.target.dataset?.f;
+  if (f) e.target.open ? entrAbiertos.add(f) : entrAbiertos.delete(f);
+}, true);
+asistenciaEl.addEventListener("input", (e) => {
+  if (!e.target.matches("textarea.nota")) return;
+  const f = e.target.dataset.f;
+  notasBorrador[f] = e.target.value;
+  const sucia = e.target.value.trim() !== ((entrenos[f] || {}).notas || "");
+  const cuerpo = e.target.closest(".cuerpo");
+  cuerpo.querySelector('[data-accion="guardar-nota"]').disabled = !sucia;
+  cuerpo.querySelector(".nota-estado").textContent = sucia ? "Nota sin guardar" : ((entrenos[f] || {}).notas ? "Nota guardada" : "");
+});
+asistenciaEl.addEventListener("change", async (e) => {
+  const el = e.target;
+  if (!esEntrenadora || el.type !== "checkbox" || !el.dataset.f) return;
+  try { await store.setAsistencia(el.dataset.f, el.dataset.n, el.checked); guardado(); }
+  catch (err) { console.error(err); toast("No se pudo guardar. Revisa la conexión."); renderAsistencia(); }
+});
+asistenciaEl.addEventListener("click", async (e) => {
+  const r = e.target.closest("[data-rango]");
+  if (e.target.closest("[data-mas]")) { entrVisibles += 4; renderAsistencia(); return; }
+  if (r) { asistRango = r.dataset.rango; renderAsistencia(); return; }
+  const b = e.target.closest("[data-accion]");
+  if (!b || !esEntrenadora) return;
+  const f = b.dataset.f, acc = b.dataset.accion;
+  try {
+    if (acc === "guardar-nota") {
+      const t = asistenciaEl.querySelector(`textarea.nota[data-f="${f}"]`);
+      await store.setNotas(f, t.value.trim());
+      delete notasBorrador[f];
+      renderAsistencia();
+    }
+    else if (acc === "todas") await store.setAsistentes(f, [...JUGADORAS]);
+    else if (acc === "ninguna") await store.setAsistentes(f, []);
+    else if (acc === "sin-entreno") await store.setSinEntreno(f, !(entrenos[f] || {}).cancelado);
+    else return;
+    guardado();
+  } catch (err) { console.error(err); toast("No se pudo guardar. Revisa la conexión."); }
+});
+
 /* PIN entrenadora */
 const dlg = document.getElementById("dlg-pin");
 const pinInput = document.getElementById("pin");
@@ -514,7 +696,9 @@ function mostrarVista(v, enfocar) {
   vista = v;
   document.getElementById("lista").hidden = v !== "partidos";
   document.getElementById("clasificacion").hidden = v !== "clasificacion";
+  document.getElementById("normas").hidden = v !== "normas";
   document.getElementById("convocatorias").hidden = v !== "convocatorias";
+  document.getElementById("asistencia").hidden = v !== "asistencia";
   actualizarCabecera();
   document.querySelectorAll(".tab").forEach((t) => {
     const on = t.dataset.vista === v;
@@ -550,6 +734,10 @@ renderClasificacion();
     if (store.modo === "nube" && base.cls === "error") setBase("", "");
     datos = d || {};
     render();
+  });
+  store.suscribirEntrenos((d) => {
+    if (d) entrenos = d;
+    renderAsistencia();
   });
 })();
 
