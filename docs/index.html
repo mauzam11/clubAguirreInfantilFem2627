@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#089369">
+  <title>Club Aguirre · Infantil Femenino 26/27</title>
+  <link rel="icon" href="assets/logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap hero-inner">
+      <img src="assets/logo.png" alt="Club Aguirre" class="logo" width="150" height="72">
+      <div>
+        <p class="eyebrow">Fútbol sala · Temporada 2026-27</p>
+        <h1>Infantil Femenino</h1>
+      </div>
+    </div>
+  </header>
+
+  <div class="bar">
+    <div class="wrap bar-inner">
+      <span id="estado" class="estado" role="status"></span>
+      <button id="btn-entrenadora" class="btn btn-ghost" type="button">Soy la entrenadora</button>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <nav class="tabs" role="tablist" aria-label="Secciones">
+      <button class="tab activa" role="tab" id="tab-partidos" aria-selected="true" aria-controls="lista" type="button" data-vista="partidos">Partidos</button>
+      <button class="tab" role="tab" id="tab-clasif" aria-selected="false" aria-controls="clasificacion" type="button" data-vista="clasificacion">Clasificación</button>
+    </nav>
+    <p class="intro" id="intro">
+      Aquí tienes los partidos. Todas las jugadoras aparecen como <strong>disponibles</strong>;
+      si alguna no puede acudir, desmárcala en ese partido.
+    </p>
+    <section id="lista" class="lista" aria-live="polite" role="tabpanel" aria-labelledby="tab-partidos"></section>
+    <section id="clasificacion" class="clasif" role="tabpanel" aria-labelledby="tab-clasif" hidden></section>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      <p><strong>Club Aguirre</strong> | Escuela de Deportes</p>
+      <p><a href="https://clubaguirre.es/futbol-sala/" rel="noopener">clubaguirre.es</a></p>
+    </div>
+  </footer>
+
+  <dialog id="dlg-pin">
+    <form method="dialog" id="form-pin">
+      <h2>Acceso entrenadora</h2>
+      <label for="pin">Introduce el PIN</label>
+      <input id="pin" type="password" inputmode="numeric" autocomplete="off" maxlength="12">
+      <p id="pin-error" class="error" hidden>PIN incorrecto</p>
+      <div class="dlg-actions">
+        <button type="button" class="btn btn-ghost" id="pin-cancel">Cancelar</button>
+        <button type="submit" class="btn">Entrar</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" hidden></div>
+
+  <script src="data.js"></script>
+  <script src="datos-liga.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

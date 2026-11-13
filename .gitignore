@@ -1,0 +1,4 @@
+.DS_Store
+*.code-workspace
+# CSV de la federación: entrada local de la skill actualizar-datos-liga (pesan ~13 MB)
+source/*.csv
