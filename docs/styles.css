@@ -173,6 +173,19 @@ h1 { margin: 0; font-family: var(--display); font-size: 22px; font-weight: 400; 
 .cruce .vs { color: var(--gris); font-weight: 500; font-size: 12px; letter-spacing: .1em; margin: 0 2px; }
 .cruce .aguirre { color: var(--acento); }
 
+/* Partido con resultado: un equipo por línea y goles con fondo propio */
+.cruce.con-resultado { display: flex; flex-direction: column; gap: 4px; text-transform: none; }
+.cruce.con-resultado .fila-eq { display: flex; align-items: stretch; justify-content: space-between; gap: 10px; }
+.cruce.con-resultado .nom { align-self: center; min-width: 0; overflow-wrap: anywhere; text-transform: uppercase; }
+.cruce.con-resultado .goles {
+  flex: none; min-width: 34px; padding: 3px 8px; text-align: center; font-variant-numeric: tabular-nums;
+  background: var(--verde-tinta); color: #fff; font-size: 18px; font-weight: 700;
+}
+.partido-info .cruce.con-resultado { max-width: 340px; }
+.partido.proximo .cruce.con-resultado { gap: 6px; }
+.partido.proximo .cruce.con-resultado .goles { background: var(--bloque-chip-bg); color: var(--bloque-chip-fg); font-family: var(--display); font-weight: 400; font-size: 34px; line-height: 1; min-width: 56px; padding: 4px 10px 5px; }
+.partido.proximo .cruce.con-resultado .aguirre { margin: 0; font-size: clamp(30px, 9vw, 38px); }
+
 .chevron { position: absolute; right: 4px; top: 50%; margin-top: -10px; width: 20px; height: 20px; color: var(--gris); transition: transform .15s var(--ease); }
 .partido[open] .chevron { transform: rotate(180deg); }
 
