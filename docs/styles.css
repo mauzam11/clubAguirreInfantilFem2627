@@ -326,6 +326,7 @@ dialog input { background: var(--fondo); color: var(--texto); width: 100%; font:
 .res.v { background: var(--verde-tinta); color: #fff; }
 .res.d { background: var(--rojo-claro); color: var(--rojo); }
 .partido.proximo .res { background: var(--bloque-chip-bg); color: var(--bloque-chip-fg); }
+.suspendido { display: inline-block; padding: 2px 8px; background: var(--rojo-claro); color: var(--rojo); border: 1px solid var(--rojo); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
 .aviso { display: inline-block; padding: 2px 8px; background: var(--ambar-claro); color: var(--ambar-tinta); font-weight: 700; font-size: 12px; }
 .disp-texto .aviso { background: var(--ambar); color: #3b2a00; }
 
