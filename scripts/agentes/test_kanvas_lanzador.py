@@ -3,7 +3,9 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from kanvas_lanzador import GRUPOS_MANUALES, RAMA_BASE, SERIALES, listas, prompt_para, tarea_origen, tipo_tarea  # noqa: E402
+from kanvas_lanzador import (  # noqa: E402
+    GRUPOS_MANUALES, RAMA_BASE, SERIALES, cierres_pendientes, listas, prompt_para, propuesta_de_cierre, tarea_origen, tipo_tarea,
+)
 
 
 def t(id_, title, state="todo", group="X", deps=None):
@@ -91,6 +93,32 @@ def test_tarea_origen_se_lee_de_la_descripcion():
 def test_datos_de_la_liga_es_grupo_manual():
     assert "DL" in GRUPOS_MANUALES
     assert "AW" not in GRUPOS_MANUALES
+
+
+def test_cierres_pendientes_solo_trabajo_en_revision_sin_commit():
+    tareas = [
+        t("AW-01", "Ya tiene commit", "review", group="AW"),
+        t("AW-02", "Commit: Ya tiene commit", group="AW", deps=["AW-01"]),
+        t("AW-03", "Push: Ya tiene commit", group="AW", deps=["AW-02"]),
+        t("AW-04", "Sin commit todavía", "review", group="AW"),
+        t("AW-05", "Aún en curso", "doing", group="AW"),
+        t("DL-01", "Datos de la liga", "review", group="DL"),
+        t("AW-06", "Commit: huérfano", "review", group="AW", deps=["AW-09"]),
+        t("AW-07", "Push: huérfano", "review", group="AW"),
+    ]
+    assert [x["id"] for x in cierres_pendientes(tareas)] == ["AW-04"]
+
+
+def test_propuesta_de_cierre_encadena_trabajo_commit_y_push():
+    lote = propuesta_de_cierre(t("AW-04", "Destacar nombre", "review", group="AW"))
+    commit, push = lote["tasks"]
+    assert commit["title"] == "Commit: Destacar nombre" and commit["deps"] == ["AW-04"] and commit["group"] == "AW"
+    assert commit["desc"].startswith("Cierre de AW-04:")
+    assert push["title"] == "Push: Destacar nombre" and push["deps"] == [commit["title"]]
+    assert tipo_tarea(commit) == "commit" and tipo_tarea(push) == "push"
+    # tras proponerlas, la tarea ya no necesita cierre
+    tras = [t("AW-04", "Destacar nombre", "review", group="AW"), {**commit, "id": "AW-05", "state": "proposed"}]
+    assert cierres_pendientes(tras) == []
 
 
 def test_rama_base_es_main():

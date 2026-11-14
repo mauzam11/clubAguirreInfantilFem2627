@@ -16,6 +16,8 @@ Tipos de tarea (por el prefijo del título):
   - «Push: …»    → sube `main` a origin (`git push origin main`). Se lanza al aprobarla: la aprobación es la autorización.
 Las tareas «commit» y «push» operan sobre el repositorio principal: nunca se ejecutan dos a la vez.
 Las tareas del grupo DL («Datos de la liga») no se lanzan nunca solas: se hacen en una sesión de Claude Code.
+Cuando una tarea de trabajo llega a revisión, el lanzador propone solo sus tareas «Commit: …» y «Push: …» (encadenadas a ella);
+quedan como propuestas hasta que las apruebes en el tablero.
 
 Seguridad: los agentes de trabajo y de commit usan scripts/agentes/agente.settings.json (deniega cualquier push y rm -rf).
 Los de «Push» usan agente_push.settings.json: solo permiten `git push origin main` (sin -C, sin forzar, sin borrar ramas).
@@ -91,9 +93,34 @@ def listas(tareas):
     )
 
 
-def cli(board, agente, *args, check=False):
+def cierres_pendientes(tareas):
+    """Tareas de trabajo en revisión a las que aún no cuelga ninguna tarea «Commit: …»."""
+    con_commit = {d for t in tareas if tipo_tarea(t) == "commit" for d in (t.get("deps") or [])}
+    return [
+        t for t in tareas
+        if t["state"] == "review" and tipo_tarea(t) == "trabajo" and t.get("group") not in GRUPOS_MANUALES and t["id"] not in con_commit
+    ]
+
+
+def propuesta_de_cierre(t):
+    """Lote para `kanvas batch`: «Commit: …» (depende de la tarea) y «Push: …» (depende del commit)."""
+    tid, titulo, grupo = t["id"], t["title"].strip(), t.get("group") or "-"
+    titulo_commit, titulo_push = f"Commit: {titulo}", f"Push: {titulo}"
+    return {"tasks": [
+        {"title": titulo_commit, "group": grupo, "deps": [tid],
+         "desc": f"Cierre de {tid}: guarda en el historial el cambio «{titulo}» y lo deja en la rama {RAMA_BASE} local, sin publicarlo.\n\n"
+                 f"Qué hace: commitea en la rama tarea/{tid} los cambios del worktree (mensaje en español) y los fusiona en {RAMA_BASE} con --no-ff. No hace push.\n\n"
+                 f"Aprobar esta tarea equivale a pedir el commit; revisa antes el resultado de {tid}."},
+        {"title": titulo_push, "group": grupo, "deps": [titulo_commit],
+         "desc": f"Cierre de {tid}: publica en GitHub la rama {RAMA_BASE} con el commit anterior; GitHub Pages actualiza la web en un par de minutos.\n\n"
+                 f"Qué hace: git push origin {RAMA_BASE} (solo {RAMA_BASE}, sin forzar). Si el remoto tuviera commits que no tenemos, no hace nada y pregunta.\n\n"
+                 f"Aprobar esta tarea equivale a pedir el push. Después, comprueba la web pasados unos minutos."},
+    ]}
+
+
+def cli(board, agente, *args, check=False, entrada=None):
     env = dict(os.environ, KANVAS_AGENT=agente)
-    r = subprocess.run(["python3", CLI, "--board", board, *args], capture_output=True, text=True, env=env)
+    r = subprocess.run(["python3", CLI, "--board", board, *args], capture_output=True, text=True, env=env, input=entrada)
     if check and r.returncode != 0:
         raise RuntimeError((r.stdout + r.stderr).strip())
     return (r.stdout + r.stderr).strip()
@@ -289,7 +316,22 @@ def main():
             elif est == "review":
                 notificar("Kanvas: tarea en revisión", f"{tid}: {t_now['title'][:60]}")
 
-        # 2) lanzar nuevas
+        # 2) proponer «Commit» y «Push» para las tareas de trabajo que ya esperan revisión
+        for t in cierres_pendientes(leer_tablero(board)):
+            if args.dry_run:
+                if t["id"] not in avisadas:
+                    avisadas.add(t["id"])
+                    log(f"[dry-run] proponería «Commit» y «Push» para {t['id']}")
+                continue
+            try:
+                log(f"{t['id']} espera revisión: " + cli(board, "lanzador", "batch", check=True,
+                                                          entrada=json.dumps(propuesta_de_cierre(t))).replace("\n", " · "))
+            except Exception as e:  # noqa: BLE001
+                if t["id"] not in avisadas:
+                    avisadas.add(t["id"])
+                    log(f"no se pudieron proponer las tareas de cierre de {t['id']}: {e}")
+
+        # 3) lanzar nuevas
         seriales_activos = any(e.kind in SERIALES for e in activos.values())
         for t in listas(leer_tablero(board)):
             tid, kind = t["id"], tipo_tarea(t)
