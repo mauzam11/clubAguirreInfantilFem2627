@@ -298,7 +298,11 @@ function tarjeta(p) {
   }
 
   const sede = p.local === CLUB ? "Local" : "Visitante";
-  const marcador = p.finalizado ? `<b class="marcador">${p.golesLocal} - ${p.golesVisitante}</b>` : "vs";
+  // Con resultado: una línea por equipo y los goles en una casilla con fondo propio
+  const fila = (n, g) => `<span class="fila-eq"><span class="nom">${equipo(n)}</span><b class="goles">${g}</b></span>`;
+  const cruce = p.finalizado
+    ? `<div class="cruce con-resultado" role="group" aria-label="Resultado: ${esc(p.local)} ${p.golesLocal}, ${esc(p.visitante)} ${p.golesVisitante}">${fila(p.local, p.golesLocal)}${fila(p.visitante, p.golesVisitante)}</div>`
+    : `<div class="cruce">${equipo(p.local)} <span class="vs">${esProx ? "— vs —" : "vs"}</span> ${equipo(p.visitante)}</div>`;
   const hora = p.hora ? p.hora + " h" : "Hora por confirmar";
   let resumen;
   if (esProx) {
@@ -310,7 +314,7 @@ function tarjeta(p) {
       <div class="destacado-fecha"><span class="sr-only">${esc(fechaLarga(p.fecha))}, ${hora}</span>
         <b aria-hidden="true">${f.num}</b>
         <span class="destacado-dm" aria-hidden="true"><span>${esc(f.dia)}<br>${esc(f.mes)}</span><span class="destacado-hora">${hora}</span></span></div>
-      <div class="cruce">${equipo(p.local)} <span class="vs">${p.finalizado ? marcador : "— vs —"}</span> ${equipo(p.visitante)}</div>
+      ${cruce}
       <div class="destacado-lugar">${ICONO_PIN}<span>${p.instalacion ? "Campo: " + esc(p.instalacion) : "Instalación por confirmar"} · ${sede}${miCamiseta ? ` · camiseta ${esc(miCamiseta.toLowerCase())}` : ""}</span></div>
       <div class="disp-barra"><div class="disp-texto"><span>${pocas ? '<span class="aviso">Pocas jugadoras</span>' : "Disponibles"}</span><b>${disponibles.length} de ${JUGADORAS.length}</b></div>
         <div class="segmentos${pocas ? " baja" : ""}" style="--n:${JUGADORAS.length}" aria-hidden="true">${JUGADORAS.map((_, i) => `<span${i < disponibles.length ? ' class="on"' : ""}></span>`).join("")}</div></div>
@@ -320,7 +324,7 @@ function tarjeta(p) {
     resumen = `
       <div class="fecha-bloque" aria-hidden="true"><span>${esc(f.dia)}</span><b>${f.num}</b><span>${esc(f.mes)}</span></div>
       <div class="partido-info">
-        <div class="cruce">${equipo(p.local)} <span class="vs">${marcador}</span> ${equipo(p.visitante)}</div>
+        ${cruce}
         <div class="meta"><span class="j">Jornada ${p.jornada}</span><span>${fechaLarga(p.fecha)}</span><span>${hora}</span><span class="sede ${sede === "Local" ? "local" : ""}">${sede}</span>${resHtml}${pocas ? '<span class="aviso">Pocas jugadoras</span>' : ""}</div>
       </div>
       ${ICONO_CHEVRON}`;
