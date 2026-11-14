@@ -13,10 +13,12 @@ sesión de Claude Code sin interfaz (`claude -p`) que la ejecuta siguiendo la sk
 Tipos de tarea (por el prefijo del título):
   - trabajo      → worktree propio `tarea/<ID>` creado desde `main`; el agente NO commitea.
   - «Commit: …»  → commitea la rama `tarea/<ID>` y la fusiona en `main` local con --no-ff (sin push).
-Las tareas «commit» operan sobre el repositorio principal: nunca se ejecutan dos a la vez.
+  - «Push: …»    → sube `main` a origin (`git push origin main`). Se lanza al aprobarla: la aprobación es la autorización.
+Las tareas «commit» y «push» operan sobre el repositorio principal: nunca se ejecutan dos a la vez.
 Las tareas del grupo DL («Datos de la liga») no se lanzan nunca solas: se hacen en una sesión de Claude Code.
 
-Seguridad: los agentes usan scripts/agentes/agente.settings.json (deniega push, push forzado y rm -rf).
+Seguridad: los agentes de trabajo y de commit usan scripts/agentes/agente.settings.json (deniega cualquier push y rm -rf).
+Los de «Push» usan agente_push.settings.json: solo permiten `git push origin main` (sin -C, sin forzar, sin borrar ramas).
 Estado, logs y worktrees van a ~/.kanvas-agentes-aguirre/.
 """
 import argparse
@@ -37,11 +39,12 @@ CLI = os.path.join(REPO, ".agents", "skills", "kanvas", "kanvas.py")
 SKILL = os.path.join(REPO, ".agents", "skills", "kanvas", "SKILL.md")
 CLAUDE_MD = os.path.join(REPO, "CLAUDE.md")
 SETTINGS = os.path.join(os.path.dirname(__file__), "agente.settings.json")
+SETTINGS_PUSH = os.path.join(os.path.dirname(__file__), "agente_push.settings.json")
 ESTADO = os.path.expanduser("~/.kanvas-agentes-aguirre")
 LOGS, WORKTREES = os.path.join(ESTADO, "logs"), os.path.join(ESTADO, "worktrees")
 RAMA_BASE = "main"
 
-SERIALES = ("commit",)  # tocan el repositorio principal: de uno en uno
+SERIALES = ("commit", "push")  # tocan el repositorio principal: de uno en uno
 GRUPOS_MANUALES = ("DL",)  # «Datos de la liga»: necesitan los CSV de source/ (ignorados por git, no existen en un worktree); se hacen en sesión
 
 
@@ -72,7 +75,12 @@ def leer_tablero(board):
 
 
 def tipo_tarea(t):
-    return "commit" if t["title"].strip().lower().startswith("commit:") else "trabajo"
+    titulo = t["title"].strip().lower()
+    if titulo.startswith("commit:"):
+        return "commit"
+    if titulo.startswith("push:"):
+        return "push"
+    return "trabajo"
 
 
 def listas(tareas):
@@ -129,9 +137,21 @@ def prompt_para(t, kind, board, cwd, origen=None, ruta_origen=None):
         f"Lee primero las reglas del flujo en {SKILL} (skill de Kanvas) y sigue la guía del proyecto en {CLAUDE_MD}.\n\n"
         f"Pasos obligatorios: 1) `show {tid}` y lee la descripción y TODAS las notas; 2) `start {tid} -m \"Plan: …\"`; "
         f"3) haz el trabajo; 4) `finish {tid} -m \"…\"` con un resumen para una persona (qué cambia, cómo se verificó, qué debe comprobar). "
-        f"No cojas otra tarea. Si necesitas una respuesta humana usa `ask {tid} \"…\"`, deja de trabajar y termina.\n"
-        f"No hagas push.\n\n"
+        f"No cojas otra tarea. Si necesitas una respuesta humana usa `ask {tid} \"…\"`, deja de trabajar y termina.\n\n"
     )
+    if kind == "push":
+        return cabecera + (
+            f"Directorio de trabajo: {cwd} (repositorio principal). Esta tarea publica la rama `{RAMA_BASE}` en el remoto con `git push origin {RAMA_BASE}`; "
+            f"aprobarla en el tablero equivale a aprobar ese push. Ejecuta los comandos de git SIN `-C` (ya estás en el repositorio) y uno por uno.\n"
+            f"1) Comprueba con `git branch --show-current` que estás en `{RAMA_BASE}` y con `git status --short` que no hay cambios sin guardar en ficheros versionados. "
+            f"Si algo no cuadra, no sigas: explícalo con `ask`.\n"
+            f"2) `git fetch origin` y revisa con `git log --oneline origin/{RAMA_BASE}..{RAMA_BASE}` los commits que se van a subir: deben corresponder a las tareas anteriores. "
+            f"Si `origin/{RAMA_BASE}` tiene commits que tú no tienes, NO hagas pull, merge, rebase ni push forzado: explícalo con `ask` y termina.\n"
+            f"3) `git push origin {RAMA_BASE}`. Después comprueba con `git status -sb` que `{RAMA_BASE}` quedó al día con `origin/{RAMA_BASE}`.\n"
+            f"4) En el resumen indica qué commits se subieron y que GitHub Pages tarda un par de minutos en publicar `docs/` (no lo vigiles). "
+            f"No subas otras ramas ni etiquetas."
+        )
+    cabecera += "No hagas push.\n\n"
     if kind == "trabajo":
         return cabecera + (
             f"Directorio de trabajo: {cwd} (worktree en la rama `tarea/{tid}`, creada desde `{RAMA_BASE}`). "
@@ -193,14 +213,15 @@ def lanzar(t, kind, args, claude, board):
         cwd = os.path.join(WORKTREES, tid) if args.dry_run else preparar_worktree(tid)
     else:
         cwd = REPO
-        origen = tarea_origen(t)
-        if not origen:
-            raise RuntimeError(f"{tid}: no encuentro «Cierre de XXX-NN» en la descripción")
-        ruta_origen = os.path.join(WORKTREES, origen)
-        if not os.path.isdir(ruta_origen):
-            raise RuntimeError(f"{tid}: no existe el worktree de {origen} ({ruta_origen})")
+        if kind == "commit":
+            origen = tarea_origen(t)
+            if not origen:
+                raise RuntimeError(f"{tid}: no encuentro «Cierre de XXX-NN» en la descripción")
+            ruta_origen = os.path.join(WORKTREES, origen)
+            if not os.path.isdir(ruta_origen):
+                raise RuntimeError(f"{tid}: no existe el worktree de {origen} ({ruta_origen})")
     prompt = prompt_para(t, kind, board, cwd, origen, ruta_origen)
-    cmd = [claude, "-p", prompt, "--permission-mode", "acceptEdits", "--settings", SETTINGS,
+    cmd = [claude, "-p", prompt, "--permission-mode", "acceptEdits", "--settings", SETTINGS_PUSH if kind == "push" else SETTINGS,
            "--add-dir", WORKTREES, "--add-dir", ESTADO, "--max-budget-usd", str(args.presupuesto),
            "--no-session-persistence", "--output-format", "text"]
     if args.modelo:
