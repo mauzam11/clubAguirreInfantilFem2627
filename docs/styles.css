@@ -190,7 +190,12 @@ h1 { margin: 0; font-family: var(--display); font-size: 22px; font-weight: 400; 
   display: flex; flex-direction: column; gap: 2px; border-top: 3px solid var(--bloque-fg); padding-top: 14px;
   font-family: var(--display); font-size: 28px; font-weight: 400; line-height: 1.05;
 }
-.partido.proximo .cruce .aguirre { color: var(--bloque-fg); }
+/* El club va más grande y en bloque invertido para distinguirlo del rival */
+.partido.proximo .cruce .aguirre {
+  align-self: flex-start; margin: 4px 0;
+  background: var(--bloque-chip-bg); color: var(--bloque-chip-fg);
+  font-size: clamp(36px, 11vw, 46px); line-height: 1; padding: 6px 12px 7px;
+}
 .partido.proximo .cruce .vs { font-family: "Archivo", system-ui, sans-serif; color: var(--bloque-fg); font-size: 12px; font-weight: 700; letter-spacing: .2em; margin: 0; }
 .partido.proximo .cruce .marcador { font-family: var(--display); font-size: 28px; font-weight: 400; letter-spacing: 0; color: var(--bloque-fg); }
 .destacado-lugar { display: flex; align-items: flex-start; gap: 10px; font-size: 18px; font-weight: 700; line-height: 1.3; }
