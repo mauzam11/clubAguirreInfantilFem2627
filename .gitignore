@@ -2,3 +2,7 @@
 *.code-workspace
 # CSV de la federación: entrada local de la skill actualizar-datos-liga (pesan ~13 MB)
 source/*.csv
+# Tablero de Kanvas: estado local que cambia con cada acción (se consulta con el CLI, no con git)
+kanvas.json
+__pycache__/
+.pytest_cache/

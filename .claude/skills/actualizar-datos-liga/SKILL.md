@@ -1,6 +1,6 @@
 ---
 name: actualizar-datos-liga
-description: Actualiza partidos, resultados, camisetas y clasificación de la web del Club Aguirre Infantil Femenino a partir de los últimos CSV subidos a source/. Úsala cuando el usuario diga que ha subido ficheros nuevos, o pida actualizar la liga, los resultados o la clasificación.
+description: Actualiza partidos, resultados, camisetas y clasificación de la web del Club Aguirre Infantil Femenino. Descarga los últimos CSV de Datos Madrid (o usa los que el usuario haya subido a source/) y regenera docs/datos-liga.js. Úsala cuando el usuario pida actualizar la liga, los resultados o la clasificación, o diga que ha subido ficheros nuevos.
 ---
 
 # Actualizar datos de la liga
@@ -9,7 +9,12 @@ Regenera `docs/datos-liga.js` (partidos del Club Aguirre + clasificación del gr
 
 ## Pasos
 
-1. Comprueba qué hay en `source/` con `ls -lt source/`. Los CSV vienen del volcado de Juegos Deportivos Municipales de Madrid: uno de **partidos** (cabecera con `Codigo_equipo1`) y otro de **clasificación** (cabecera con `Puntos`). El script los reconoce por la cabecera, no por el nombre, y usa el más reciente de cada tipo. Si el usuario subió solo uno de los dos, el otro se reutiliza tal cual está: dilo en el resumen.
+1. **Consigue los CSV.** Salvo que el usuario diga que ya los ha subido él a `source/`, descárgalos desde la raíz del proyecto:
+   ```
+   python3 -I scripts/descargar_csv.py
+   ```
+   Baja de Datos Madrid el CSV de partidos y el de clasificaciones vigentes (se publican cada miércoles) y los guarda en `source/` como `partidos_AAAAMMDD.csv` y `clasificaciones_AAAAMMDD.csv`. Si el contenido es idéntico al que ya hay, lo dice y no guarda nada: en ese caso informa al usuario de que no hay datos nuevos y para ahí (puedes mirar antes qué hay publicado con `--comprobar`). Si falla la descarga o la validación, no inventes ni reutilices nada: informa al usuario.
+   Después comprueba `source/` con `ls -lt source/`. Los CSV son de **partidos** (cabecera con `Codigo_equipo1`) y de **clasificación** (cabecera con `Puntos`). El script de generación los reconoce por la cabecera, no por el nombre, y usa el más reciente de cada tipo. Si solo hay uno nuevo de los dos, el otro se reutiliza tal cual está: dilo en el resumen.
 2. Ejecuta desde la raíz del proyecto:
    ```
    python3 scripts/generar_datos.py
