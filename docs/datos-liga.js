@@ -1,10 +1,10 @@
 // GENERADO por scripts/generar_datos.py a partir de source/*.csv. No editar a mano.
 window.LIGA = {
   "grupo": "JDM SAL SABDOM FS INF FEM",
-  "actualizado": "2026-11-13 13:03",
-  "ficheroPartidos": "211549-0-juegos-deportivos-actual-csv.csv",
-  "ficheroClasificacion": "211549-2-juegos-deportivos-actual-csv.csv",
-  "origenClasificacion": "calculada"
+  "actualizado": "2026-11-17 23:35",
+  "ficheroPartidos": "partidos_20261116.csv",
+  "ficheroClasificacion": "clasificaciones_20261116.csv",
+  "origenClasificacion": "csv"
 };
 window.PARTIDOS = [
   {
@@ -17,6 +17,7 @@ window.PARTIDOS = [
     "camisetaLocal": "amarillo",
     "camisetaVisitante": "verde",
     "finalizado": false,
+    "suspendido": true,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -30,6 +31,7 @@ window.PARTIDOS = [
     "camisetaLocal": "NEGRA/amarilla",
     "camisetaVisitante": "verde",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -43,6 +45,7 @@ window.PARTIDOS = [
     "camisetaLocal": "verde",
     "camisetaVisitante": "CORAL",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -56,6 +59,7 @@ window.PARTIDOS = [
     "camisetaLocal": "Naranja",
     "camisetaVisitante": "verde",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -69,6 +73,7 @@ window.PARTIDOS = [
     "camisetaLocal": "verde",
     "camisetaVisitante": "Blanca",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -82,6 +87,7 @@ window.PARTIDOS = [
     "camisetaLocal": "Azul",
     "camisetaVisitante": "verde",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -95,6 +101,7 @@ window.PARTIDOS = [
     "camisetaLocal": "verde",
     "camisetaVisitante": "Roja",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -108,6 +115,7 @@ window.PARTIDOS = [
     "camisetaLocal": "verde",
     "camisetaVisitante": "amarillo",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -121,6 +129,7 @@ window.PARTIDOS = [
     "camisetaLocal": "verde",
     "camisetaVisitante": "NEGRA/amarilla",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -134,6 +143,7 @@ window.PARTIDOS = [
     "camisetaLocal": "CORAL",
     "camisetaVisitante": "verde",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -147,6 +157,7 @@ window.PARTIDOS = [
     "camisetaLocal": "verde",
     "camisetaVisitante": "Naranja",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -160,6 +171,7 @@ window.PARTIDOS = [
     "camisetaLocal": "Blanca",
     "camisetaVisitante": "verde",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -173,6 +185,7 @@ window.PARTIDOS = [
     "camisetaLocal": "verde",
     "camisetaVisitante": "Azul",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -186,97 +199,98 @@ window.PARTIDOS = [
     "camisetaLocal": "Roja",
     "camisetaVisitante": "verde",
     "finalizado": false,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   }
 ];
 window.CLASIFICACION = [
   {
-    "equipo": "A.D.C. FILIPENSES",
-    "pts": 0,
-    "pj": 0,
-    "g": 0,
-    "e": 0,
-    "p": 0,
-    "gf": 0,
-    "gc": 0,
-    "pos": 1
-  },
-  {
-    "equipo": "ADEF RIVAS",
-    "pts": 0,
-    "pj": 0,
-    "g": 0,
-    "e": 0,
-    "p": 0,
-    "gf": 0,
-    "gc": 0,
-    "pos": 2
-  },
-  {
     "equipo": "Club Aguirre",
+    "pos": 1,
     "pts": 0,
     "pj": 0,
     "g": 0,
     "e": 0,
     "p": 0,
     "gf": 0,
-    "gc": 0,
-    "pos": 3
-  },
-  {
-    "equipo": "Colegio Agustiniano",
-    "pts": 0,
-    "pj": 0,
-    "g": 0,
-    "e": 0,
-    "p": 0,
-    "gf": 0,
-    "gc": 0,
-    "pos": 4
-  },
-  {
-    "equipo": "DEPORTIVO MADRID",
-    "pts": 0,
-    "pj": 0,
-    "g": 0,
-    "e": 0,
-    "p": 0,
-    "gf": 0,
-    "gc": 0,
-    "pos": 5
+    "gc": 0
   },
   {
     "equipo": "Dragones de Lavapiés A",
+    "pos": 2,
     "pts": 0,
     "pj": 0,
     "g": 0,
     "e": 0,
     "p": 0,
     "gf": 0,
-    "gc": 0,
-    "pos": 6
+    "gc": 0
+  },
+  {
+    "equipo": "A.D.C. FILIPENSES",
+    "pos": 3,
+    "pts": 0,
+    "pj": 0,
+    "g": 0,
+    "e": 0,
+    "p": 0,
+    "gf": 0,
+    "gc": 0
   },
   {
     "equipo": "EM ALUCHE FS \"X\"",
+    "pos": 4,
     "pts": 0,
     "pj": 0,
     "g": 0,
     "e": 0,
     "p": 0,
     "gf": 0,
-    "gc": 0,
-    "pos": 7
+    "gc": 0
   },
   {
     "equipo": "Santa Susana",
+    "pos": 5,
     "pts": 0,
     "pj": 0,
     "g": 0,
     "e": 0,
     "p": 0,
     "gf": 0,
-    "gc": 0,
-    "pos": 8
+    "gc": 0
+  },
+  {
+    "equipo": "ADEF RIVAS",
+    "pos": 6,
+    "pts": 0,
+    "pj": 0,
+    "g": 0,
+    "e": 0,
+    "p": 0,
+    "gf": 0,
+    "gc": 0
+  },
+  {
+    "equipo": "Colegio Agustiniano",
+    "pos": 7,
+    "pts": 0,
+    "pj": 0,
+    "g": 0,
+    "e": 0,
+    "p": 0,
+    "gf": 0,
+    "gc": 0
+  },
+  {
+    "equipo": "DEPORTIVO MADRID",
+    "pos": 8,
+    "pts": 0,
+    "pj": 0,
+    "g": 0,
+    "e": 0,
+    "p": 0,
+    "gf": 0,
+    "gc": 0
   }
 ];

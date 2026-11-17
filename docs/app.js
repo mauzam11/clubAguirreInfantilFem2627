@@ -235,9 +235,6 @@ const ICONO_PIN = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const ICONO_CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>`;
 const ICONO_CAL = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>`;
 
-/* Jornadas suspendidas (marca manual; el CSV no lo indica). Quitar el número cuando se reprograme. */
-const JORNADAS_SUSPENDIDAS = new Set([1]);
-
 function tarjeta(p) {
   const estado = estadoDe(p.jornada);
   const { noDisp, disponibles } = estado;
@@ -251,7 +248,7 @@ function tarjeta(p) {
   const abierto = abiertos.has(p.jornada);
   const pocas = !pasado && disponibles.length < MIN_JUGADORAS;
   const res = resultadoClub(p);
-  const suspendido = JORNADAS_SUSPENDIDAS.has(p.jornada);
+  const suspendido = !!p.suspendido; // Estado «S» del CSV: se quita solo al reprogramarse
   const resHtml = (res ? `<span class="res ${res.c}">${res.t}</span>` : "") + (suspendido ? '<span class="suspendido">Suspendido</span>' : "");
   const mapa = p.instalacion
     ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.instalacion + " Madrid")}`

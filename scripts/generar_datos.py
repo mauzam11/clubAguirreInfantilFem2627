@@ -82,6 +82,8 @@ def mostrar_cambios(ant_p, ant_c, partidos, clasif):
             print(f"+ {et}: partido nuevo"); hay = True; continue
         if p["finalizado"] and not a.get("finalizado"):
             print(f"* {et}: RESULTADO {p['local']} {p['golesLocal']}-{p['golesVisitante']} {p['visitante']}"); hay = True
+        if p["suspendido"] != bool(a.get("suspendido")):
+            print(f"! {et}: " + ("SUSPENDIDO" if p["suspendido"] else "ya no figura como suspendido (reprogramado)")); hay = True
         for campo, nom in (("fecha", "fecha"), ("hora", "hora"), ("instalacion", "instalación"),
                            ("camisetaLocal", "camiseta local"), ("camisetaVisitante", "camiseta visitante"),
                            ("local", "local"), ("visitante", "visitante")):
@@ -130,6 +132,7 @@ def main():
             "camisetaLocal": r["Color_Camiseta_1"].strip() or None,
             "camisetaVisitante": r["Color_Camiseta_2"].strip() or None,
             "finalizado": fin,
+            "suspendido": r["Estado"].strip() == "S",
             "golesLocal": num(r["Resultado1"]) if fin else None,
             "golesVisitante": num(r["Resultado2"]) if fin else None,
         })
