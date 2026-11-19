@@ -20,6 +20,15 @@ CLUB = "Club Aguirre"
 DEPORTE = "FUTBOL SALA"
 CATEGORIA = "INFANTIL FEMENINO"
 
+# Correcciones manuales sobre lo que dice el CSV, por número de jornada. Solo se aplican mientras el CSV siga
+# diciendo lo de «csv» (fecha y suspendido); en cuanto la federación lo actualice, se avisa y hay que borrar la entrada.
+AJUSTES = {
+    1: {  # Dragones de Lavapiés A - Aguirre: suspendido el 14-11; se jugará el 29-11, sin hora ni instalación confirmadas
+        "csv": {"fecha": "2026-11-14", "suspendido": True},
+        "poner": {"fecha": "2026-11-29", "hora": None, "instalacion": None, "suspendido": False},
+    },
+}
+
 
 def leer_csv(ruta):
     raw = ruta.read_bytes()
@@ -137,6 +146,15 @@ def main():
             "golesVisitante": num(r["Resultado2"]) if fin else None,
         })
     partidos.sort(key=lambda p: p["jornada"])
+    for p in partidos:
+        aj = AJUSTES.get(p["jornada"])
+        if not aj:
+            continue
+        if all(p[k] == v for k, v in aj["csv"].items()):
+            p.update(aj["poner"])
+            print(f"Ajuste manual aplicado a la jornada {p['jornada']}: " + ", ".join(f"{k}={v}" for k, v in aj["poner"].items()))
+        else:
+            print(f"! AJUSTES[{p['jornada']}] obsoleto: el CSV ya no dice {aj['csv']}. Bórralo de scripts/generar_datos.py.")
 
     # --- Clasificación ---
     codigo_nombre = {}

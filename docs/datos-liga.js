@@ -1,23 +1,23 @@
 // GENERADO por scripts/generar_datos.py a partir de source/*.csv. No editar a mano.
 window.LIGA = {
   "grupo": "JDM SAL SABDOM FS INF FEM",
-  "actualizado": "2026-11-17 23:35",
-  "ficheroPartidos": "partidos_20261116.csv",
-  "ficheroClasificacion": "clasificaciones_20261116.csv",
+  "actualizado": "2026-11-19 23:45",
+  "ficheroPartidos": "partidos_20261119.csv",
+  "ficheroClasificacion": "clasificaciones_20261119.csv",
   "origenClasificacion": "csv"
 };
 window.PARTIDOS = [
   {
     "jornada": 1,
-    "fecha": "2026-11-14",
-    "hora": "14:30",
+    "fecha": "2026-11-29",
+    "hora": null,
     "local": "Dragones de Lavapiés A",
     "visitante": "Club Aguirre",
-    "instalacion": "Futbol Sala Eva Duarte",
+    "instalacion": null,
     "camisetaLocal": "amarillo",
     "camisetaVisitante": "verde",
     "finalizado": false,
-    "suspendido": true,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -206,18 +206,18 @@ window.PARTIDOS = [
 ];
 window.CLASIFICACION = [
   {
-    "equipo": "Club Aguirre",
+    "equipo": "Santa Susana",
     "pos": 1,
-    "pts": 0,
-    "pj": 0,
-    "g": 0,
+    "pts": 3,
+    "pj": 1,
+    "g": 1,
     "e": 0,
     "p": 0,
-    "gf": 0,
+    "gf": 3,
     "gc": 0
   },
   {
-    "equipo": "Dragones de Lavapiés A",
+    "equipo": "Club Aguirre",
     "pos": 2,
     "pts": 0,
     "pj": 0,
@@ -228,7 +228,7 @@ window.CLASIFICACION = [
     "gc": 0
   },
   {
-    "equipo": "A.D.C. FILIPENSES",
+    "equipo": "Dragones de Lavapiés A",
     "pos": 3,
     "pts": 0,
     "pj": 0,
@@ -250,7 +250,7 @@ window.CLASIFICACION = [
     "gc": 0
   },
   {
-    "equipo": "Santa Susana",
+    "equipo": "ADEF RIVAS",
     "pos": 5,
     "pts": 0,
     "pj": 0,
@@ -261,7 +261,7 @@ window.CLASIFICACION = [
     "gc": 0
   },
   {
-    "equipo": "ADEF RIVAS",
+    "equipo": "Colegio Agustiniano",
     "pos": 6,
     "pts": 0,
     "pj": 0,
@@ -272,7 +272,7 @@ window.CLASIFICACION = [
     "gc": 0
   },
   {
-    "equipo": "Colegio Agustiniano",
+    "equipo": "DEPORTIVO MADRID",
     "pos": 7,
     "pts": 0,
     "pj": 0,
@@ -283,14 +283,14 @@ window.CLASIFICACION = [
     "gc": 0
   },
   {
-    "equipo": "DEPORTIVO MADRID",
+    "equipo": "A.D.C. FILIPENSES",
     "pos": 8,
     "pts": 0,
-    "pj": 0,
+    "pj": 1,
     "g": 0,
     "e": 0,
-    "p": 0,
+    "p": 1,
     "gf": 0,
-    "gc": 0
+    "gc": 3
   }
 ];

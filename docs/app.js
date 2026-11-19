@@ -229,7 +229,9 @@ const NOTAS_MAX = 1000;
 let entrVisibles = 4;        // sesiones mostradas en la lista (se amplía de 4 en 4)
 let asistRango = "todo";     // resumen de asistencia: "todo" | "semana" (últimos 7 días)
 
-const proximo = PARTIDOS.find((p) => p.fecha >= hoyISO()) || null;
+// Por fecha, no por jornada: un partido aplazado puede jugarse después de jornadas posteriores
+const PARTIDOS_POR_FECHA = [...PARTIDOS].sort((a, b) => a.fecha.localeCompare(b.fecha) || a.jornada - b.jornada);
+const proximo = PARTIDOS_POR_FECHA.find((p) => p.fecha >= hoyISO()) || null;
 
 const borradores = {};       // jornada -> convocatoria en edición (sin publicar)
 const sinPublicar = (j) => {
@@ -517,8 +519,8 @@ function render() {
   const y = window.scrollY;
   const foco = selectorFoco(document.activeElement, cont);
   const hoy = hoyISO();
-  const futuros = PARTIDOS.filter((p) => p !== proximo && p.fecha >= hoy);
-  const jugados = PARTIDOS.filter((p) => p.fecha < hoy).reverse();
+  const futuros = PARTIDOS_POR_FECHA.filter((p) => p !== proximo && p.fecha >= hoy);
+  const jugados = PARTIDOS_POR_FECHA.filter((p) => p.fecha < hoy).reverse();
   cont.innerHTML =
     (proximo ? `<h2 class="sr-only">Próximo partido</h2>${tarjeta(proximo)}` : "") +
     (futuros.length ? `<h2 class="seccion">Calendario<span class="cinta-rep" aria-hidden="true">${"✦ Calendario ".repeat(6)}</span></h2>${futuros.map(tarjeta).join("")}` : "") +
