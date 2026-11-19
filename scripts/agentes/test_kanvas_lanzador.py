@@ -4,7 +4,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from kanvas_lanzador import (  # noqa: E402
-    GRUPOS_MANUALES, RAMA_BASE, SERIALES, cierres_pendientes, listas, prompt_para, propuesta_de_cierre, tarea_origen, tipo_tarea,
+    GRUPOS_MANUALES, RAMA_BASE, es_manual, SERIALES, cierres_pendientes, listas, prompt_para, propuesta_de_cierre, tarea_origen, tipo_tarea,
 )
 
 
@@ -123,3 +123,18 @@ def test_propuesta_de_cierre_encadena_trabajo_commit_y_push():
 
 def test_rama_base_es_main():
     assert RAMA_BASE == "main"
+
+
+def test_actualizar_datos_de_la_liga_se_lanza_pero_otras_dl_no():
+    assert not es_manual(t("DL-02", "Actualizar datos de la liga (miércoles)", group="DL"))
+    assert es_manual(t("DL-03", "Revisar camisetas", group="DL"))
+    assert not es_manual(t("DL-04", "Commit: Actualizar datos de la liga", group="DL"))
+    assert not es_manual(t("DL-05", "Push: Actualizar datos de la liga", group="DL"))
+    assert es_manual(t("DL-06", "Commit: Revisar camisetas", group="DL"))
+    assert not es_manual(t("AW-01", "Actualizar datos de la liga", group="AW"))
+
+
+def test_actualizar_liga_en_revision_propone_commit_y_push():
+    tareas = [t("DL-02", "Actualizar datos de la liga", "review", group="DL")]
+    assert [x["id"] for x in cierres_pendientes(tareas)] == ["DL-02"]
+    assert "descargar_csv.py" in prompt_para(tareas[0], "trabajo", "b.json", "/wt")

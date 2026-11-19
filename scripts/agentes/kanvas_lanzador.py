@@ -15,7 +15,8 @@ Tipos de tarea (por el prefijo del título):
   - «Commit: …»  → commitea la rama `tarea/<ID>` y la fusiona en `main` local con --no-ff (sin push).
   - «Push: …»    → sube `main` a origin (`git push origin main`). Se lanza al aprobarla: la aprobación es la autorización.
 Las tareas «commit» y «push» operan sobre el repositorio principal: nunca se ejecutan dos a la vez.
-Las tareas del grupo DL («Datos de la liga») no se lanzan nunca solas: se hacen en una sesión de Claude Code.
+Las tareas del grupo DL («Datos de la liga») no se lanzan solas, salvo las que se titulan «Actualizar datos de la liga…»: esas se
+ejecutan como tarea de trabajo (el agente descarga los CSV él mismo en su worktree). Cualquier otra tarea DL se hace en una sesión.
 Cuando una tarea de trabajo llega a revisión, el lanzador propone solo sus tareas «Commit: …» y «Push: …» (encadenadas a ella);
 quedan como propuestas hasta que las apruebes en el tablero.
 
@@ -48,6 +49,7 @@ RAMA_BASE = "main"
 
 SERIALES = ("commit", "push")  # tocan el repositorio principal: de uno en uno
 GRUPOS_MANUALES = ("DL",)  # «Datos de la liga»: necesitan los CSV de source/ (ignorados por git, no existen en un worktree); se hacen en sesión
+PREFIJO_ACTUALIZAR_LIGA = "actualizar datos de la liga"  # excepción: estas tareas DL sí se lanzan (descargan los CSV en el worktree)
 
 
 def ahora():
@@ -85,6 +87,14 @@ def tipo_tarea(t):
     return "trabajo"
 
 
+def es_manual(t):
+    """Tarea que el lanzador no coge: grupo manual, salvo «Actualizar datos de la liga…» y su Commit/Push (a demanda)."""
+    if t.get("group") not in GRUPOS_MANUALES:
+        return False
+    titulo = re.sub(r"^(commit|push):\s*", "", t["title"].strip().lower())  # sus «Commit:»/«Push:» de cierre también
+    return not titulo.startswith(PREFIJO_ACTUALIZAR_LIGA)
+
+
 def listas(tareas):
     estado = {t["id"]: t["state"] for t in tareas}
     return sorted(
@@ -98,7 +108,7 @@ def cierres_pendientes(tareas):
     con_commit = {d for t in tareas if tipo_tarea(t) == "commit" for d in (t.get("deps") or [])}
     return [
         t for t in tareas
-        if t["state"] == "review" and tipo_tarea(t) == "trabajo" and t.get("group") not in GRUPOS_MANUALES and t["id"] not in con_commit
+        if t["state"] == "review" and tipo_tarea(t) == "trabajo" and not es_manual(t) and t["id"] not in con_commit
     ]
 
 
@@ -179,6 +189,17 @@ def prompt_para(t, kind, board, cwd, origen=None, ruta_origen=None):
             f"No subas otras ramas ni etiquetas."
         )
     cabecera += "No hagas push.\n\n"
+    if kind == "trabajo" and not es_manual(t) and t.get("group") in GRUPOS_MANUALES:
+        return cabecera + (
+            f"Directorio de trabajo: {cwd} (worktree en la rama `tarea/{tid}`, creada desde `{RAMA_BASE}`). "
+            f"Esta tarea actualiza los datos de la liga: sigue la skill {REPO}/.claude/skills/actualizar-datos-liga/SKILL.md, "
+            f"pero ejecutando los scripts DESDE ESTE WORKTREE (sus rutas son relativas a él): `python3 -I scripts/descargar_csv.py` y después "
+            f"`python3 scripts/generar_datos.py`, cada uno por separado. En el worktree no hay `source/`: lo crea la descarga; no uses el del repositorio principal. "
+            f"Si la descarga dice que no hay datos nuevos, no cambies nada y dilo en el resumen. Si algo falla, no inventes datos: usa `ask`. "
+            f"NO edites `docs/datos-liga.js` a mano ni toques Firestore. NO hagas commit: lo hará la tarea de cierre. "
+            f"En el `finish`, resume la sección «Cambios respecto a la versión anterior» destacando cambios de fecha, hora o instalación, "
+            f"resultados nuevos, movimientos en la tabla y si la clasificación es «calculada» o viene del CSV."
+        )
     if kind == "trabajo":
         return cabecera + (
             f"Directorio de trabajo: {cwd} (worktree en la rama `tarea/{tid}`, creada desde `{RAMA_BASE}`). "
@@ -339,7 +360,7 @@ def main():
                 break
             if args.solo is not None and tid not in args.solo:
                 continue
-            if t.get("group") in GRUPOS_MANUALES:
+            if es_manual(t):
                 if tid not in avisadas:
                     avisadas.add(tid)
                     log(f"{tid}: es del grupo {t['group']}, que se hace en una sesión de Claude Code; no se lanza solo")
