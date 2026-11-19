@@ -120,6 +120,31 @@ const fechaCorta = (iso) => {
 };
 const fechaLarga = (iso) =>
   new Date(iso + "T12:00:00").toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+/* Mensaje de convocatoria para WhatsApp. La cita es de 25 a 20 minutos antes del partido. */
+function textoWhatsApp(p, conv) {
+  const menos = (hhmm, min) => {
+    const [h, m] = hhmm.split(":").map(Number);
+    const t = (h * 60 + m - min + 1440) % 1440;
+    return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+  };
+  const fecha = fechaLarga(p.fecha).replace(",", "");
+  const rival = p.local === CLUB ? p.visitante : p.local;
+  const color = (p.local === CLUB ? p.camisetaLocal : p.camisetaVisitante) || "verde";
+  const orden = (n) => { const i = JUGADORAS.indexOf(n); return i < 0 ? JUGADORAS.length : i; };
+  const lista = [...conv].sort((a, b) => orden(a) - orden(b));
+  return [
+    `📅 Jornada ${p.jornada}\n${fecha.charAt(0).toUpperCase() + fecha.slice(1)}`,
+    `📍 ${p.instalacion || "Instalación por confirmar"}`,
+    p.hora
+      ? `⏰ Convocatoria: ${menos(p.hora, 25)}-${menos(p.hora, 20)} h\nPartido: ${p.hora} h`
+      : "⏰ Hora por confirmar",
+    `🆚 ${rival}`,
+    `Convocadas:\n${lista.length ? lista.join("\n") : "(sin convocar)"}`,
+    `👕 Camiseta ${color.toLowerCase()}, pantalón negro y medias negras`,
+    "🎒 Camiseta amarilla con número y botella de agua",
+    "1, 2, 3 Aguirre 💚🖤💚🖤💚",
+  ].join("\n\n");
+}
 const hoyISO = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -599,8 +624,7 @@ lista.addEventListener("click", async (e) => {
   }
   if (acc === "copiar") {
     if (sinPublicar(j)) { toast("Guarda la convocatoria antes de copiarla"); return; }
-    const txt = `⚽ Convocatoria Jornada ${j}\n${p.local} vs ${p.visitante}\n${fechaLarga(p.fecha)}${p.hora ? " · " + p.hora + " h" : ""}\n${p.instalacion || ""}\n\n` +
-      (conv.length ? conv.map((n) => "• " + n).join("\n") : "(sin convocar)");
+    const txt = textoWhatsApp(p, conv);
     try { await navigator.clipboard.writeText(txt); toast("Convocatoria copiada"); }
     catch { toast("No se pudo copiar"); }
   }
