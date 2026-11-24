@@ -23,9 +23,9 @@ CATEGORIA = "INFANTIL FEMENINO"
 # Correcciones manuales sobre lo que dice el CSV, por número de jornada. Solo se aplican mientras el CSV siga
 # diciendo lo de «csv» (fecha y suspendido); en cuanto la federación lo actualice, se avisa y hay que borrar la entrada.
 AJUSTES = {
-    1: {  # Dragones de Lavapiés A - Aguirre: suspendido el 14-11; se jugará el 29-11, sin hora ni instalación confirmadas
+    1: {  # Dragones de Lavapiés A - Aguirre: suspendido el 14-11; se jugará el 29-11 a las 9:00 en Torrespaña
         "csv": {"fecha": "2026-11-14", "suspendido": True},
-        "poner": {"fecha": "2026-11-29", "hora": None, "instalacion": None, "suspendido": False},
+        "poner": {"fecha": "2026-11-29", "hora": "09:00", "instalacion": "Fútbol sala Torrespaña", "suspendido": False},
     },
 }
 

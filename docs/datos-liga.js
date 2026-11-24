@@ -1,19 +1,19 @@
 // GENERADO por scripts/generar_datos.py a partir de source/*.csv. No editar a mano.
 window.LIGA = {
   "grupo": "JDM SAL SABDOM FS INF FEM",
-  "actualizado": "2026-11-19 23:45",
-  "ficheroPartidos": "partidos_20261119.csv",
-  "ficheroClasificacion": "clasificaciones_20261119.csv",
+  "actualizado": "2026-11-24 12:53",
+  "ficheroPartidos": "partidos_20261123.csv",
+  "ficheroClasificacion": "clasificaciones_20261123.csv",
   "origenClasificacion": "csv"
 };
 window.PARTIDOS = [
   {
     "jornada": 1,
     "fecha": "2026-11-29",
-    "hora": null,
+    "hora": "09:00",
     "local": "Dragones de Lavapiés A",
     "visitante": "Club Aguirre",
-    "instalacion": null,
+    "instalacion": "Fútbol sala Torrespaña",
     "camisetaLocal": "amarillo",
     "camisetaVisitante": "verde",
     "finalizado": false,
@@ -31,7 +31,7 @@ window.PARTIDOS = [
     "camisetaLocal": "NEGRA/amarilla",
     "camisetaVisitante": "verde",
     "finalizado": false,
-    "suspendido": false,
+    "suspendido": true,
     "golesLocal": null,
     "golesVisitante": null
   },
@@ -217,40 +217,40 @@ window.CLASIFICACION = [
     "gc": 0
   },
   {
-    "equipo": "Club Aguirre",
-    "pos": 2,
-    "pts": 0,
-    "pj": 0,
-    "g": 0,
-    "e": 0,
-    "p": 0,
-    "gf": 0,
-    "gc": 0
-  },
-  {
-    "equipo": "Dragones de Lavapiés A",
-    "pos": 3,
-    "pts": 0,
-    "pj": 0,
-    "g": 0,
-    "e": 0,
-    "p": 0,
-    "gf": 0,
-    "gc": 0
-  },
-  {
     "equipo": "EM ALUCHE FS \"X\"",
-    "pos": 4,
-    "pts": 0,
-    "pj": 0,
-    "g": 0,
+    "pos": 2,
+    "pts": 3,
+    "pj": 1,
+    "g": 1,
     "e": 0,
     "p": 0,
-    "gf": 0,
+    "gf": 6,
     "gc": 0
   },
   {
     "equipo": "ADEF RIVAS",
+    "pos": 3,
+    "pts": 3,
+    "pj": 1,
+    "g": 1,
+    "e": 0,
+    "p": 0,
+    "gf": 6,
+    "gc": 0
+  },
+  {
+    "equipo": "A.D.C. FILIPENSES",
+    "pos": 4,
+    "pts": 3,
+    "pj": 2,
+    "g": 1,
+    "e": 0,
+    "p": 1,
+    "gf": 6,
+    "gc": 3
+  },
+  {
+    "equipo": "Club Aguirre",
     "pos": 5,
     "pts": 0,
     "pj": 0,
@@ -272,25 +272,25 @@ window.CLASIFICACION = [
     "gc": 0
   },
   {
-    "equipo": "DEPORTIVO MADRID",
+    "equipo": "Dragones de Lavapiés A",
     "pos": 7,
-    "pts": 0,
-    "pj": 0,
-    "g": 0,
-    "e": 0,
-    "p": 0,
-    "gf": 0,
-    "gc": 0
-  },
-  {
-    "equipo": "A.D.C. FILIPENSES",
-    "pos": 8,
     "pts": 0,
     "pj": 1,
     "g": 0,
     "e": 0,
     "p": 1,
     "gf": 0,
-    "gc": 3
+    "gc": 6
+  },
+  {
+    "equipo": "DEPORTIVO MADRID",
+    "pos": 8,
+    "pts": 0,
+    "pj": 2,
+    "g": 0,
+    "e": 0,
+    "p": 2,
+    "gf": 0,
+    "gc": 12
   }
 ];
