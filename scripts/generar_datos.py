@@ -27,6 +27,10 @@ AJUSTES = {
         "csv": {"fecha": "2026-11-14", "suspendido": True},
         "poner": {"fecha": "2026-11-29", "hora": "09:00", "instalacion": "Fútbol sala Torrespaña", "suspendido": False},
     },
+    2: {  # ADEF RIVAS - Aguirre: suspendido el 21-11; se jugará el 2-12 a las 19:00 en el C.E.I.P. Escuelas Aguirre
+        "csv": {"fecha": "2026-11-21", "suspendido": True},
+        "poner": {"fecha": "2026-12-02", "hora": "19:00", "instalacion": "C.E.I.P. Escuelas Aguirre", "suspendido": False},
+    },
 }
 
 

@@ -1,7 +1,7 @@
 // GENERADO por scripts/generar_datos.py a partir de source/*.csv. No editar a mano.
 window.LIGA = {
   "grupo": "JDM SAL SABDOM FS INF FEM",
-  "actualizado": "2026-11-24 12:53",
+  "actualizado": "2026-11-24 13:35",
   "ficheroPartidos": "partidos_20261123.csv",
   "ficheroClasificacion": "clasificaciones_20261123.csv",
   "origenClasificacion": "csv"
@@ -23,15 +23,15 @@ window.PARTIDOS = [
   },
   {
     "jornada": 2,
-    "fecha": "2026-11-21",
-    "hora": "10:30",
+    "fecha": "2026-12-02",
+    "hora": "19:00",
     "local": "ADEF RIVAS",
     "visitante": "Club Aguirre",
-    "instalacion": "Fútbol sala Torrespaña",
+    "instalacion": "C.E.I.P. Escuelas Aguirre",
     "camisetaLocal": "NEGRA/amarilla",
     "camisetaVisitante": "verde",
     "finalizado": false,
-    "suspendido": true,
+    "suspendido": false,
     "golesLocal": null,
     "golesVisitante": null
   },
