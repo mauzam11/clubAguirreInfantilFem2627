@@ -289,6 +289,34 @@ def notificar(titulo, texto):
     subprocess.run(["osascript", "-e", f'display notification "{texto}" with title "{titulo}"'], capture_output=True)
 
 
+ARCHIVOS_VIGILADOS = (
+    os.path.abspath(__file__),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "agente.settings.json"),
+    os.path.join(os.path.dirname(os.path.abspath(__file__)), "agente_push.settings.json"),
+)
+
+
+def huella_codigo():
+    """(ruta, mtime) del script y de los permisos: si cambia, el servicio corre con código o permisos antiguos."""
+    res = []
+    for ruta in ARCHIVOS_VIGILADOS:
+        try:
+            res.append((ruta, os.stat(ruta).st_mtime_ns))
+        except OSError:
+            res.append((ruta, None))
+    return tuple(res)
+
+
+def codigo_valido():
+    """El script actual compila (evita reiniciar en bucle si se guardó a medias)."""
+    try:
+        with open(ARCHIVOS_VIGILADOS[0], "rb") as f:
+            compile(f.read(), ARCHIVOS_VIGILADOS[0], "exec")
+        return True
+    except (OSError, SyntaxError, ValueError):
+        return False
+
+
 def main():
     ap = argparse.ArgumentParser(description="Lanza agentes de Claude Code para las tareas listas del tablero Kanvas")
     ap.add_argument("--board", default=BOARD_DEFECTO)
@@ -310,6 +338,8 @@ def main():
 
     activos, fallos, avisadas = {}, {}, set()
     parar = {"v": False}
+    huella_inicial = huella_codigo()
+    reinicio = False  # código o permisos cambiados: no se lanza nada nuevo y se sale al quedar sin agentes
     signal.signal(signal.SIGINT, lambda *_: parar.__setitem__("v", True))
     signal.signal(signal.SIGTERM, lambda *_: parar.__setitem__("v", True))
 
@@ -351,6 +381,21 @@ def main():
                 if t["id"] not in avisadas:
                     avisadas.add(t["id"])
                     log(f"no se pudieron proponer las tareas de cierre de {t['id']}: {e}")
+
+        # 2b) ¿cambió el código o los permisos? Reinicio limpio: sin tocar los agentes en vuelo
+        if not reinicio and not args.una_vez and huella_codigo() != huella_inicial:
+            if codigo_valido():
+                reinicio = True
+                log("código o permisos cambiados: no se lanzan tareas nuevas y se reinicia al terminar los agentes en curso")
+            else:
+                huella_inicial = huella_codigo()  # no reintentar hasta el siguiente cambio
+                log("código o permisos cambiados, pero el script no compila: no se reinicia")
+        if reinicio:
+            if not activos:
+                log("sin agentes en curso: saliendo para que launchd me relance con el código nuevo")
+                return
+            time.sleep(args.intervalo)
+            continue
 
         # 3) lanzar nuevas
         seriales_activos = any(e.kind in SERIALES for e in activos.values())
