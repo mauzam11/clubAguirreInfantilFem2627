@@ -1,9 +1,9 @@
 // GENERADO por scripts/generar_datos.py a partir de source/*.csv. No editar a mano.
 window.LIGA = {
   "grupo": "JDM SAL SABDOM FS INF FEM",
-  "actualizado": "2026-11-24 13:35",
-  "ficheroPartidos": "partidos_20261123.csv",
-  "ficheroClasificacion": "clasificaciones_20261123.csv",
+  "actualizado": "2026-11-27 13:38",
+  "ficheroPartidos": "partidos_20261126.csv",
+  "ficheroClasificacion": "clasificaciones_20261126.csv",
   "origenClasificacion": "csv"
 };
 window.PARTIDOS = [
@@ -27,7 +27,7 @@ window.PARTIDOS = [
     "hora": "19:00",
     "local": "ADEF RIVAS",
     "visitante": "Club Aguirre",
-    "instalacion": "C.E.I.P. Escuelas Aguirre",
+    "instalacion": "CCN ESCUELAS AGUIRRE:EXT:FS1 - RETIRO",
     "camisetaLocal": "NEGRA/amarilla",
     "camisetaVisitante": "verde",
     "finalizado": false,
